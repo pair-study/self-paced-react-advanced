@@ -32,7 +32,16 @@
 - `import styles from "./Component.module.css"` 형태로 객체로 가져온다.
 - 클래스 적용 시 `className={styles.클래스명}` 형태로 사용한다.
 - `App.css`처럼 전역 스타일은 `import "./App.css"` 로 import하면 앱 전체에 적용되고, 어느 컴포넌트에서든 문자열로 바로 쓸 수 있다. (`className="text-title"`)
-- CSS Module 클래스와 전역 클래스를 함께 쓸 때는 템플릿 리터럴을 사용한다 (`className={`${styles.name} text-title`}`)
+- CSS Module 클래스와 전역 클래스를 함께 쓸 때는 템플릿 리터럴을 사용한다.
+
+  ```jsx
+  className={`${styles.name} text-title`}
+  ```
+
+### CSS Module의 특징
+- 클래스명이 빌드 시 고유한 해시값으로 변환된다. (`gnb__title` → `_gnb__title_abc12_1`)
+- 덕분에 서로 다른 컴포넌트에서 동일한 클래스명을 사용해도 충돌하지 않는다.
+- 일반 CSS import는 전역으로 적용되어 클래스명 충돌 위험이 있지만, CSS Module은 컴포넌트 단위로 스코프가 격리된다.
 
 ### React 컴포넌트 기본 구조
 - 컴포넌트는 반드시 `return`이 있어야 화면에 렌더링된다.
@@ -70,3 +79,15 @@ CSS 클래스명에 하이픈(-)이 포함된 경우 점 표기법(`styles.class
 ---
 
 ## 🛠 리팩토링
+
+1. CSS 클래스 네이밍 BEM 원칙 적용
+
+  - 이유: 템플릿의 CSS를 그대로 복사해 사용하다 보니 `modal-backdrop`, `modal-container`처럼 블록과 엘리먼트 관계임에도 단순 하이픈(-)으로 연결된 클래스가 혼재했다. BEM 원칙상 엘리먼트는 `__`로 구분해야 하는데, 이를 지키지 않아 클래스 간의 계층 구조가 명확히 드러나지 않았다.
+
+  - 개선: `modal-backdrop` → `modal__backdrop`, `modal-container` → `modal__container` 등 엘리먼트 관계에 해당하는 클래스를 `__`로 통일하였다. 그 결과 블록/엘리먼트는 점 표기법(`styles.modal__backdrop`), modifier만 대괄호 표기법(`styles["modal--open"]`)으로 쓰는 일관된 규칙이 생겼다.
+
+2. CSS Module 클래스 접근 표기법 일관성 확보
+
+  - 이유: 일부 클래스는 `styles.gnb__title`처럼 점 표기법으로, 일부는 `styles["restaurant-filter-container"]`처럼 대괄호 표기법으로 혼용되어 코드의 일관성이 떨어졌다. 두 표기법이 섞이면 어떤 기준으로 선택해야 하는지 불명확하다.
+
+  - 개선: BEM 리팩토링을 통해 클래스명에서 단순 하이픈을 제거하여, block과 element는 항상 점 표기법, modifier(`--`)는 JS에서 감소 연산자로 해석되므로 반드시 대괄호 표기법을 사용한다는 명확한 기준을 만들었다. 
