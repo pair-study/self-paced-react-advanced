@@ -6,7 +6,7 @@
   display: block;
 }
 
-.modal-backdrop {
+.modal__backdrop {
   position: fixed;
   top: 0;
   right: 0;
@@ -16,7 +16,7 @@
   background: rgba(0, 0, 0, 0.35);
 }
 
-.modal-container {
+.modal__container {
   position: fixed;
   bottom: 0;
   width: 100%;
@@ -27,36 +27,36 @@
   background: var(--grey-100);
 }
 
-.modal-title {
+.modal__title {
   margin-bottom: 36px;
 }
 
-.form-item {
+.formItem {
   display: flex;
   flex-direction: column;
 
   margin-bottom: 36px;
 }
 
-.form-item label {
+.formItem label {
   color: var(--grey-400);
   font-size: 14px;
 }
 
-.form-item--required label::after {
+.formItem--required label::after {
   padding-left: 4px;
 
   color: var(--primary-color);
   content: "*";
 }
 
-.form-item .help-text {
+.formItem__helpText {
   color: var(--grey-300);
 }
 
-.form-item input,
-.form-item textarea,
-.form-item select {
+.formItem input,
+.formItem textarea,
+.formItem select {
   padding: 8px;
   margin: 6px 0;
 
@@ -66,11 +66,11 @@
   font-size: 16px;
 }
 
-.form-item textarea {
+.formItem textarea {
   resize: none;
 }
 
-.form-item select {
+.formItem select {
   height: 44px;
 
   padding: 8px;
@@ -86,7 +86,7 @@ input[name="link"] {
   height: 44px;
 }
 
-.button-container {
+.modal__buttonContainer {
   display: flex;
 }
 

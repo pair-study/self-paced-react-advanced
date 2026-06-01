@@ -8,11 +8,11 @@ import etcImg from "../../assets/category-etc.png";
 
 export default function RestaurantList() {
   return (
-    <section className={styles["restaurant-list-container"]}>
+    <section className={styles.restaurantList}>
       <ul>
         <li className={styles.restaurant}>
           <div className={styles.restaurant__category}>
-            <img src={koreanImg} alt="한식" className={styles["category-icon"]} />
+            <img src={koreanImg} alt="한식" className={styles.restaurant__categoryIcon} />
           </div>
           <div className={styles.restaurant__info}>
             <h3 className={`${styles.restaurant__name} text-subtitle`}>
@@ -33,7 +33,7 @@ export default function RestaurantList() {
 
         <li className={styles.restaurant}>
           <div className={styles.restaurant__category}>
-            <img src={chineseImg} alt="중식" className={styles["category-icon"]} />
+            <img src={chineseImg} alt="중식" className={styles.restaurant__categoryIcon} />
           </div>
           <div className={styles.restaurant__info}>
             <h3 className={`${styles.restaurant__name} text-subtitle`}>친친</h3>
@@ -46,7 +46,7 @@ export default function RestaurantList() {
 
         <li className={styles.restaurant}>
           <div className={styles.restaurant__category}>
-            <img src={japaneseImg} alt="일식" className={styles["category-icon"]} />
+            <img src={japaneseImg} alt="일식" className={styles.restaurant__categoryIcon} />
           </div>
           <div className={styles.restaurant__info}>
             <h3 className={`${styles.restaurant__name} text-subtitle`}>잇쇼우</h3>
@@ -60,7 +60,7 @@ export default function RestaurantList() {
 
         <li className={styles.restaurant}>
           <div className={styles.restaurant__category}>
-            <img src={westernImg} alt="양식" className={styles["category-icon"]} />
+            <img src={westernImg} alt="양식" className={styles.restaurant__categoryIcon} />
           </div>
           <div className={styles.restaurant__info}>
             <h3 className={`${styles.restaurant__name} text-subtitle`}>
@@ -74,7 +74,7 @@ export default function RestaurantList() {
 
         <li className={styles.restaurant}>
           <div className={styles.restaurant__category}>
-            <img src={asianImg} alt="아시안" className={styles["category-icon"]} />
+            <img src={asianImg} alt="아시안" className={styles.restaurant__categoryIcon} />
           </div>
           <div className={styles.restaurant__info}>
             <h3 className={`${styles.restaurant__name} text-subtitle`}>
@@ -88,7 +88,7 @@ export default function RestaurantList() {
 
         <li className={styles.restaurant}>
           <div className={styles.restaurant__category}>
-            <img src={etcImg} alt="기타" className={styles["category-icon"]} />
+            <img src={etcImg} alt="기타" className={styles.restaurant__categoryIcon} />
           </div>
           <div className={styles.restaurant__info}>
             <h3 className={`${styles.restaurant__name} text-subtitle`}>

@@ -2,11 +2,11 @@ import styles from "./CategoryFilter.module.css";
 
 export default function CategoryFilter() {
   return (
-    <section className={styles["restaurant-filter-container"]}>
+    <section className={styles.categoryFilter}>
       <select
         name="category"
         id="category-filter"
-        className={styles["restaurant-filter"]}
+        className={styles.categoryFilter__select}
         aria-label="음식점 카테고리 필터"
       >
         <option value="전체">전체</option>
