@@ -1,17 +1,23 @@
+import styles from "./Modal.module.css";
+
 export default function RestaurantDetailModal() {
   return (
-    <div className="modal">
-      <div className="modal-backdrop"></div>
-      <div className="modal-container">
-        <h2 className="modal-title text-title">음식점 이름</h2>
-        <div className="restaurant-info">
-          <p className="restaurant-info__description text-body">
+    <div className={styles.modal}>
+      <div className={styles["modal-backdrop"]}></div>
+      <div className={styles["modal-container"]}>
+        <h2 className={`${styles["modal-title"]} text-title`}>음식점 이름</h2>
+        <div className={styles["restaurant-info"]}>
+          <p className={`${styles["restaurant-info__description"]} text-body`}>
             음식점 소개 문구
           </p>
         </div>
         {/* 닫기 버튼 */}
-        <div className="button-container">
-          <button className="button button--primary text-caption">닫기</button>
+        <div className={styles["button-container"]}>
+          <button
+            className={`${styles.button} ${styles["button--primary"]} text-caption`}
+          >
+            닫기
+          </button>
         </div>
       </div>
     </div>
