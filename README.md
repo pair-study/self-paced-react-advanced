@@ -1,48 +1,87 @@
-# Self-Paced React
+# Self-Paced React Step 1
 
-## 🎯 이 학습 자료의 목표 경험
-React를 사용해 자주 사용되는 UI들을 아주 기초적인 수준으로 구현해봅니다.    
-이 과정에서 React의 설계 원칙을 고려하며 개발하는 연습의 첫 단계를 경험해봅니다.
-- JavaScript 기반의 React 프로젝트를 직접 실행할 수 있다. 
-- React에서 컴포넌트를 선언하고 사용할 수 있다. 
-- 아래와 같은 UI를 가장 기초적인 수준에서 구현할 수 있다. (유효성 검사, 그 외 UX 대응 등 모두 X)
-  - 목록 UI
-  - 모달 UI
-  - 폼 UI 
+## 🎯 개인 목표 및 목표 달성을 위한 행동 가이드
 
-### ❌ 다루지 않는 것
-- TypeScript
-- RSC(React Server Component)
-- 테스트 도구
-  - Storybook
-  - RTL(React Testing Library)
-- 라우팅, 상태 관리 등을 위한 서드파티 라이브러리
-- React의 깊이있는 동작 원리
-- React 컴포넌트 구현 패턴
-- Context API
-- Ref
-- useState/useEffect 이외의 hook, custom hook
+이번 미션을 통해 다음과 같은 학습 경험들을 쌓는 것을 목표로 한다.
 
-### ✅ 다루는 것
-- 'React의 설계 원칙에 맞는' 코드를 작성하기 위한 학습에서 참고할 만한 자료
-- JSX
-- useState
-- useEffect 
+1. React의 원칙과 특성 이해
+   React 공식 문서의 Quick Start를 읽으며 기존에 알고 있던 React 지식을 비교하고 재정리한다.
 
-## 🧙‍♀️ 진행 가이드
-이 저장소의 미션들은 '잘' 구현하기나 '깊이 이해하기'가 목표가 아닙니다.      
-'React를 사용해본 적 없는 상태'에서 '사용해본 상태'가 되는 것이 목표이고, 그걸 위해 최소한으로 필요한 만큼만 공식 문서를 발췌해서 학습 자료로 활용해보았다면 충분합니다.                   
+2. HTML과 JSX의 차이점 이해
+   주어진 HTML 템플릿을 `App.jsx`로 변환하는 과정을 직접 실습하며 두 문법의 차이점을 이해한다.
 
-React를 활용하는 코드를 직접 작성해보면서 대략적인 감을 잡을 수 있다면 충분하니,      
-각 단계의 권장 학습 시간을 참고해 전체 사이클을 빠른 시간 내에 완료하는 것을 목표로 삼아 보세요.       
-만약 권장 시간 내에 구현해내기가 어렵다면, 예시 브랜치의 코드를 참고해서 동작시켜보아도 됩니다.     
-React를 처음 접하는 상태에서 모든 단계를 구현해서 동작시켜보는 데까지 `약 4시간(최대 6시간)`을 권장 학습 시간으로 제시하고 있습니다.  
+3. 컴포넌트 분리 기준 정립
+   UI를 컴포넌트 단위로 분리하는 기준을 스스로 고민하고 세워본다.
 
-## 🦮 목차
-### [00. Introduction](./00-introduction/README.md)
-### [01. 컴포넌트 선언하고 사용하기: Component 기본 구조와 JSX](./01-first-component/README.md)
-### [02. 목록 UI 구현하기: Props와 State](./02-rendering-lists/README.md)
-### [03. 모달 UI 구현하기: side-effect(feat. event handler)](./03-modal/README.md)
-### [04. 폼 UI 구현하기: controlled vs uncontrolled](./04-form/README.md) 
-### [05. API 연동하기: side-effect(feat. effects)](./05-effects/README.md)
-### [06. References](./06-references/README.md)
+4. CSS Module 사용 및 특성 이해
+   `module.css`를 직접 사용해보고, 일반 CSS와의 차이점 및 특성을 이해한다.
+
+---
+
+## 📝 기능 구현 목록
+
+1. 컴포넌트 분리
+  - 헤더
+  - 카테고리/정렬 필터
+  - 음식점 목록
+  - 음식점 정보 모달
+  - 음식점 추가 모달
+2. CSS Module 적용
+
+---
+
+## 📚 학습 내용
+
+### 1. React의 원칙과 목표
+
+React는 UI를 렌더링 하기 위한 JavaScript 라이브러리이다.
+
+**React 설계 원칙**
+
+1. UI를 컴포넌트 단위로 나누어 구현한다. 각 컴포넌트는 독립적이고, 순수함을 유지해야 한다.
+2. Single Source of Truth로부터 나온 데이터의 일관성을 유지해야 한다.
+   - SSoT는 정보 시스템과 데이터 관리에서 **모든 데이터 요소를 단 하나의 출처에서만 제어 및 수정하도록 조직하는 원칙**이다. 여러 곳에 데이터 사본을 두지 않고, 오직 하나의 신뢰할 수 있는 원본만을 가리키도록 하여 데이터 불일치와 오류를 방지한다.
+3. 단방향 데이터 흐름을 유지해야 한다.
+4. UI는 선언적으로 구성해야 한다.
+
+   <차이점>
+   - 바닐라 JS (명령적 UI 구성): DOM을 직접 조작해 어떻게 변해야 하는지 모든 절차를 명령한다.
+   - React (선언적 UI 구성): DOM 조작 x, 상태에 따른 최종 UI의 모습만 선언한다.
+
+   <선언적 방식의 장점>
+   - 브라우저의 DOM을 조작하는 작업은 리액트의 virtual DOM에게 위임할 수 있다.
+   - 코드를 보고 화면의 결과를 바로 예측할 수 있기 때문에 직관성과 가독성이 높아진다.
+   - UI 렌더링에 오류가 발생하면 DOM 조작 과정을 추적하지 않고 현재 상태 데이터가 올바른지만 확인하면 되기 때문에 디버깅 및 유지보수가 쉬워진다.
+
+### 2. React(core)와 React Renderer
+
+React로 애플리케이션을 만들 때는 항상 두 가지를 함께 사용한다.
+
+    - React(core): 컴포넌트 작성, 상태 관리, Virtual DOM 비교 등 환경에 독립적인 핵심 로직을 담당한다.
+    - React Renderer: React(core)가 만들어낸 결과물을 실제 환경에 그리는 역할을 담당한다.
+
+React(core)는 **무엇을 그릴지**만 계산하고, Renderer가 **어디에 어떻게 그릴지**를 결정하는 구조다.
+
+| Renderer       | 환경              | import                                       |
+| -------------- | ----------------- | -------------------------------------------- |
+| `react-dom`    | 웹 브라우저 (DOM) | `import ReactDOM from "react-dom/client"`    |
+| `react-native` | iOS / Android 앱  | `import { AppRegistry } from "react-native"` |
+| `ink`          | CLI 터미널        | `import { render } from "ink"`               |
+
+이 구조 덕분에 React(core)의 문법과 개념은 그대로 유지하면서, Renderer만 교체하면 웹/모바일/터미널 등 다양한 환경에서 동작하는 애플리케이션을 만들 수 있다. React Native가 처음 소개될 때 "Learn once, write everywhere"를 슬로건으로 내세운 것도 이 구조에서 비롯된 것이다.
+
+---
+
+## 🤔 고민했던 문제와 해결 과정에서 배운 점
+
+---
+
+## 🛠 리팩토링
+
+---
+
+## 과거 코드와 비교
+
+### 달라진 점
+
+### 과거 코드에서 배운 점
