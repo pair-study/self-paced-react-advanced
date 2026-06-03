@@ -80,3 +80,14 @@
   - 이유: 모든 음식점에 한식 이미지만 매핑되어 있었다. 각 음식점의 `category` 필드를 활용하지 않고 있었고, 새로운 카테고리 추가 시 컴포넌트 코드를 수정해야 했다.
 
   - 개선: `CATEGORY_IMAGES` 객체를 만들어 카테고리와 이미지를 매핑했다. 이제 음식점 데이터의 `category`에 따라 자동으로 올바른 이미지가 표시된다. 새로운 카테고리를 추가할 때도 객체에만 항목을 추가하면 된다.
+
+3. 상수와 유틸 함수를 별도 파일로 분리
+
+  - 이유: App.jsx에 RESTAURANTS 데이터와 filter 함수가 모두 포함되어 있어서 컴포넌트 로직과 비즈니스 로직이 섞여 있었다. 파일이 길어지고 가독성이 떨어졌다.
+
+  - 개선: 
+    - `src/constants/restaurants.js` — RESTAURANTS 배열 분리
+    - `src/constants/categoryImages.js` — CATEGORY_IMAGES 매핑 객체 분리
+    - `src/utils/filterRestaurants.js` — filterRestaurants 함수 분리 (함수명, 함수 형태 수정)
+    
+    App.jsx는 이제 필요한 상수와 함수를 import해서 사용하므로 역할이 명확해졌다. 또한 각 모듈이 독립적이므로 재사용성이 높아졌고, 테스트하거나 수정할 때 해당 파일만 건드리면 된다.
