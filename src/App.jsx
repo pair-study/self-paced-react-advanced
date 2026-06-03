@@ -1,4 +1,5 @@
 import "./App.css";
+import { restaurants } from "./utils/restaurants";
 import Header from "./Header";
 import CategoryFilter from "./CategoryFilter";
 import RestaurantList from "./RestaurantList";
@@ -11,7 +12,7 @@ function App() {
       <Header />
       <main>
         <CategoryFilter />
-        <RestaurantList />
+        <RestaurantList restaurants={restaurants} />
       </main>
       <aside>
         <RestaurantDetailModal />
