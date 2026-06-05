@@ -1,13 +1,17 @@
 import styles from "./RestaurantList.module.css";
 import { CATEGORY_IMAGES } from "../../constants/categoryImages.js";
 
-export default function RestaurantList({ restaurants }) {
+export default function RestaurantList({ restaurants, onSelect }) {
   return (
     <section className={styles.restaurantList}>
       <ul>
         {restaurants.map((restaurant) => {
           return (
-            <li key={restaurant.id} className={styles.restaurant}>
+            <li
+              key={restaurant.id}
+              className={styles.restaurant}
+              onClick={onSelect}
+            >
               <div className={styles.restaurant__category}>
                 <img
                   src={CATEGORY_IMAGES[restaurant.category]}
