@@ -1,93 +1,130 @@
-# Props와 State
+# 조건부 렌더링 활용
 
 ## 🎯 개인 목표 및 목표 달성을 위한 행동 가이드
 
 이번 미션을 통해 다음과 같은 학습 경험들을 쌓는 것을 목표로 한다.
 
-1. Props를 통해 부모 컴포넌트에서 자식 컴포넌트로 데이터를 전달하는 방식을 이해한다.
-2. State를 사용해 컴포넌트 내부의 동적 상태를 관리한다.
-3. Props와 State를 조합하여 부모-자식 간 양방향 데이터 흐름을 구현한다.
+1. 이벤트 핸들러를 통해 사용자 인터랙션에 반응하는 방법을 이해한다.
+2. 조건부 렌더링(`&&`)을 활용해 상황에 따라 컴포넌트를 보여주고 숨긴다.
+3. 어떤 값을 state로 선언해야 하는지 기준을 세운다.
 
 ---
 
 ## 📝 기능 구현 목록
 
-- [x] RestaurantList에 restaurants 배열을 props로 전달
-- [x] 배열 데이터를 map()으로 동적 렌더링
-- [x] 각 리스트 항목에 key prop 추가
-- [x] CategoryFilter에서 선택된 카테고리 상태 관리
-- [x] App 컴포넌트에서 카테고리별 필터링 로직 구현
-- [x] 필터된 데이터를 RestaurantList에 props로 전달
-- [x] 카테고리별 동적 이미지 매핑
+- [x] 음식점 아이템 클릭 시 모달 열기
+- [x] 닫기 버튼 또는 backdrop 클릭 시 모달 닫기
+- [x] 클릭한 음식점 정보를 모달에 전달하여 표시
 
 ---
 
 ## 📚 학습 내용
 
-### Props (속성)
-- 부모 컴포넌트에서 자식 컴포넌트로 데이터를 전달하는 메커니즘이다.
-- 자식 컴포넌트 함수의 매개변수로 받는다: `function Component({ prop1, prop2 }) { }`
-- Props는 읽기 전용이므로 자식에서 직접 수정할 수 없다.
+### 이벤트 핸들러와 데이터 전달
 
-### State (상태)
-- 컴포넌트 내부에서 변경 가능한 데이터를 관리한다.
-- `useState` 훅으로 선언한다: `const [state, setState] = useState(초기값)`
-- State가 변경되면 컴포넌트가 리렌더링된다.
-- State는 각 컴포넌트 인스턴스마다 독립적으로 존재한다.
+이벤트 핸들러에 함수를 직접 연결하면 React가 이벤트 객체(`e`)를 자동으로 넘겨준다. 클릭된 아이템의 데이터를 함께 전달하려면 화살표 함수로 한 번 감싸야 한다.
 
-### Props vs State
-- Props: 부모 → 자식, 읽기 전용
-- State: 컴포넌트 내부, 변경 가능
-- State를 변경하려면 setter 함수(`setState`)를 사용한다.
+```jsx
+// 이벤트 객체(e)만 전달됨
+onClick={onRestaurantClick}
 
-### 배열 렌더링과 Key
-- 배열을 렌더링할 때 `map()` 메서드를 사용한다.
-- 각 항목에 고유한 `key` prop을 부여해야 한다.
-- key는 React가 어떤 항목이 변경/추가/삭제되었는지 식별하는 데 사용된다.
-- 안정적인 고유값(예: id)을 key로 사용하고, index는 피한다.
+// 클릭된 restaurant 데이터를 직접 전달
+onClick={() => onRestaurantClick(restaurant)}
+```
 
-### 동적 데이터 매핑
-- 객체를 사용해 카테고리와 이미지 등을 매핑할 수 있다.
-- `const CATEGORY_IMAGES = { "한식": koreanImg, ... }`
-- 필요한 값을 동적으로 조회: `CATEGORY_IMAGES[restaurant.category]`
+`() => onRestaurantClick(restaurant)`는 `map` 순회 중인 `restaurant`를 부모까지 전달하는 역할을 한다.
+
+### 조건부 렌더링
+
+`{condition && <Component />}` 패턴으로 조건이 참일 때만 컴포넌트를 렌더링한다.
+
+```jsx
+{clickedRestaurant && (
+  <RestaurantDetailModal restaurant={clickedRestaurant} onClose={handleModalClose} />
+)}
+```
+
+### State로 선언할 것과 아닌 것
+
+**State가 필요한 경우**: 시간이 지나면서 변하고, 렌더링에 영향을 주며, 다른 state나 props로부터 계산할 수 없는 값
+
+**State가 불필요한 경우**: 기존 state나 props로부터 계산 가능한 파생값(derived value)
+
+```jsx
+// category state에서 계산 가능 → state 불필요
+const filteredRestaurants = filterRestaurants(RESTAURANTS, category);
+
+// clickedRestaurant state에서 계산 가능 → state 불필요
+const isRestaurantDetailModalOpen = !!clickedRestaurant;
+```
+
+파생 변수는 state와 달리 setter가 없어 동기화 버그가 생기지 않고, 렌더링마다 자동으로 최신값을 계산한다.
+
+### `&&` 조건부 렌더링 주의사항
+
+`&&` 앞에 숫자나 빈 문자열 같은 falsy 값이 오면, `false`로 평가되지 않고 값 자체가 화면에 출력된다.
+
+```jsx
+// ⚠️ count가 0이면 "0"이 화면에 렌더링됨
+{count && <Modal />}
+
+// ✅ 명시적으로 불리언으로 변환
+{!!count && <Modal />}
+{count > 0 && <Modal />}
+```
+
+이 미션에서 `clickedRestaurant`는 객체 또는 `null`만 들어오므로 문제없지만, 숫자나 문자열을 조건으로 쓸 때는 주의해야 한다. `!!`를 사용하는 이유 중 하나이기도 하다.
+
+### Lifting State Up
+
+클릭된 음식점 정보를 `RestaurantList`와 `RestaurantDetailModal` 두 컴포넌트가 공유해야 하므로, 공통 부모인 `App`에서 state를 관리한다.
+
+### `!!` 이중 부정 연산자
+
+자바스크립트에서 값의 truthy/falsy 평가 결과를 명시적으로 불리언 값으로 변환하기 위해 사용된다. 주로 조건식의 결과를 일관된 불리언 타입으로 정규화할 때 활용된다.
+
+```jsx
+!!null       // → false (모달 닫힌 상태)
+!!{ id: 1 } // → true  (모달 열린 상태)
+```
 
 ---
 
 ## 🤔 고민했던 문제와 해결 과정에서 배운 점
 
-### Controlled Component의 필요성
-처음엔 CategoryFilter가 자체 state를 관리했고 RestaurantList는 고정된 데이터를 표시했다. 부모인 App에서 카테고리 선택값을 알 수 없었다.
+### 무엇을 state로 선언할지
 
-**해결:** State를 부모 App으로 올렸다. CategoryFilter는 props로 `category`와 `onChangeCategory`를 받아 controlled component가 되었고, 필터링 로직은 App에서 처리하게 됐다. 이를 통해 부모-자식 간 데이터 흐름이 단방향으로 명확해졌다.
+가장 고민이 된 부분은 `restaurant`를 state로 만들어야 하는가였다. `filteredRestaurants`로 계산할 수 있을 것 같아 state가 불필요하다고 생각했는데, 실제로는 두 값의 역할이 다르다.
 
-### 동적 이미지 매핑의 필요성
-처음엔 모든 음식점이 한식 이미지(`koreanImg`)만 표시됐다. 음식점 객체에 `category` 필드가 있는데도 활용하지 않고 있었다.
+- `filteredRestaurants` — 화면에 보여줄 **목록** → `category`에서 파생, state 불필요
+- `clickedRestaurant` — 모달에 보여줄 **선택된 하나** → 클릭 전까지 알 수 없으므로 state 필요
 
-**해결:** `CATEGORY_IMAGES` 객체를 만들어 카테고리별 이미지를 매핑했다. `src={CATEGORY_IMAGES[restaurant.category]}`로 각 음식점에 맞는 이미지가 동적으로 표시되도록 수정했다.
+**기준**: 다른 값으로부터 계산할 수 없다면 state, 계산할 수 있다면 파생 변수
+
+### isModalOpen과 clickedRestaurant를 따로 두면 생기는 문제
+
+처음엔 `isModalOpen` boolean과 `clickedRestaurant` 두 state를 동시에 관리하려 했다. 이 경우 둘을 항상 함께 업데이트해야 하는데, 하나라도 빠지면 모달은 열려 있지만 `clickedRestaurant`가 `null`인 상황이 발생해 런타임 에러가 난다.
+
+```jsx
+function handleRestaurantClick(restaurant) {
+  setClickedRestaurant(restaurant);
+  setIsModalOpen(true); // 둘 중 하나라도 빠지면 버그
+}
+```
+
+**해결:** `clickedRestaurant` 하나로 통합. `null`이면 닫힌 상태, 값이 있으면 열린 상태다. `isRestaurantDetailModalOpen`은 이를 기반으로 계산한 파생 변수로 가독성을 확보했다.
+
+```jsx
+const [clickedRestaurant, setClickedRestaurant] = useState(null);
+const isRestaurantDetailModalOpen = !!clickedRestaurant; // 파생 변수
+```
 
 ---
 
 ## 🛠 리팩토링
 
-1. Props와 State 책임 분리
+State 설계를 단계적으로 개선하며 사고 과정을 커밋으로 기록했다.
 
-  - 이유: 초기 구현에서 각 컴포넌트가 자신의 state를 독립적으로 관리하고 있어, 부모 컴포넌트가 상태 변화를 알 수 없었다. 이로 인해 필터링이 제대로 작동하지 않았다.
-
-  - 개선: State를 부모 App 컴포넌트로 올렸다(state lifting). CategoryFilter는 선택된 카테고리를 props로 받아 표시만 하고, 변경 시 콜백 함수를 통해 부모에 알린다. 이제 App이 중앙에서 상태를 관리하고, RestaurantList에 필터된 데이터를 props로 전달한다.
-
-2. 동적 이미지 매핑으로 하드코딩 제거
-
-  - 이유: 모든 음식점에 한식 이미지만 매핑되어 있었다. 각 음식점의 `category` 필드를 활용하지 않고 있었고, 새로운 카테고리 추가 시 컴포넌트 코드를 수정해야 했다.
-
-  - 개선: `CATEGORY_IMAGES` 객체를 만들어 카테고리와 이미지를 매핑했다. 이제 음식점 데이터의 `category`에 따라 자동으로 올바른 이미지가 표시된다. 새로운 카테고리를 추가할 때도 객체에만 항목을 추가하면 된다.
-
-3. 상수와 유틸 함수를 별도 파일로 분리
-
-  - 이유: App.jsx에 RESTAURANTS 데이터와 filter 함수가 모두 포함되어 있어서 컴포넌트 로직과 비즈니스 로직이 섞여 있었다. 파일이 길어지고 가독성이 떨어졌다.
-
-  - 개선: 
-    - `src/constants/restaurants.js` — RESTAURANTS 배열 분리
-    - `src/constants/categoryImages.js` — CATEGORY_IMAGES 매핑 객체 분리
-    - `src/utils/filterRestaurants.js` — filterRestaurants 함수 분리 (함수명, 함수 형태 수정)
-    
-    App.jsx는 이제 필요한 상수와 함수를 import해서 사용하므로 역할이 명확해졌다. 또한 각 모듈이 독립적이므로 재사용성이 높아졌고, 테스트하거나 수정할 때 해당 파일만 건드리면 된다.
+1. **Stage 1** — `isModalOpen` boolean state로 모달 열고 닫기만 구현 (restaurant 데이터 없음)
+2. **Stage 2** — `isModalOpen` + `clickedRestaurant` 두 state로 실제 데이터 전달 (동기화 문제 내포)
+3. **Stage 3** — `clickedRestaurant` 단일 state로 통합, `isRestaurantDetailModalOpen`을 파생 변수로 개선
