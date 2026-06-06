@@ -10,7 +10,7 @@ export default function RestaurantList({ restaurants, onSelect }) {
             <li
               key={restaurant.id}
               className={styles.restaurant}
-              onClick={onSelect}
+              onClick={() => onSelect(restaurant)}
             >
               <div className={styles.restaurant__category}>
                 <img

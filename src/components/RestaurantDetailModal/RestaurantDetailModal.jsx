@@ -1,13 +1,15 @@
 import styles from "./RestaurantDetailModal.module.css";
 
-export default function RestaurantDetailModal({ onClose }) {
+export default function RestaurantDetailModal({ restaurant, onClose }) {
   return (
     <div className={`${styles.modal} ${styles["modal--open"]}`}>
       <div className={styles.modal__backdrop} onClick={onClose}></div>
       <div className={styles.modal__container}>
-        <h2 className={`${styles.modal__title} text-title`}>음식점 이름</h2>
+        <h2 className={`${styles.modal__title} text-title`}>
+          {restaurant.name}
+        </h2>
         <div className={styles.modal__restaurantInfo}>
-          <p className="text-body">음식점 소개 문구</p>
+          <p className="text-body">{restaurant.description}</p>
         </div>
         <div className={styles.modal__buttonContainer}>
           <button
