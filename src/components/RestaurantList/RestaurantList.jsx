@@ -1,7 +1,7 @@
 import styles from "./RestaurantList.module.css";
 import { CATEGORY_IMAGES } from "../../constants/categoryImages.js";
 
-export default function RestaurantList({ restaurants, onSelect }) {
+export default function RestaurantList({ restaurants, onRestaurantClick }) {
   return (
     <section className={styles.restaurantList}>
       <ul>
@@ -10,7 +10,7 @@ export default function RestaurantList({ restaurants, onSelect }) {
             <li
               key={restaurant.id}
               className={styles.restaurant}
-              onClick={() => onSelect(restaurant)}
+              onClick={() => onRestaurantClick(restaurant)}
             >
               <div className={styles.restaurant__category}>
                 <img
