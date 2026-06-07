@@ -38,7 +38,7 @@ function App() {
     setIsAddRestaurantModalOpen(false);
   }
 
-  function handleSubmit({ category, name, description }) {
+  function handleRestaurantSubmit({ category, name, description }) {
     setRestaurants([
       ...restaurants,
       {
@@ -73,7 +73,7 @@ function App() {
         )}
         {isAddRestaurantModalOpen && (
           <AddRestaurantModal
-            onSubmit={handleSubmit}
+            onSubmit={handleRestaurantSubmit}
             onClose={handleAddRestaurantModalClose}
           />
         )}

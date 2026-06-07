@@ -7,14 +7,14 @@ export default function AddRestaurantModal({ onSubmit, onClose }) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
 
-  function handleSubmit(e) {
+  function handleFormSubmit(e) {
     e.preventDefault();
     onSubmit({ category, name, description });
   }
 
   return (
     <Modal title="새로운 음식점" onClose={onClose}>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleFormSubmit}>
         <div className={`${styles.formItem} ${styles["formItem--required"]}`}>
           <label htmlFor="category" className="text-caption">
             카테고리
