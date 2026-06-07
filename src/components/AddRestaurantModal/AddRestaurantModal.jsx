@@ -4,9 +4,9 @@ export default function AddRestaurantModal({
   category,
   name,
   description,
-  handleCategoryChange,
-  handleNameChange,
-  handleDescriptionChange,
+  onCategoryChange,
+  onNameChange,
+  onDescriptionChange,
   onSubmit,
   onClose,
 }) {
@@ -24,7 +24,7 @@ export default function AddRestaurantModal({
               name="category"
               id="category"
               value={category}
-              onChange={handleCategoryChange}
+              onChange={onCategoryChange}
               required
             >
               <option value="">선택해 주세요</option>
@@ -46,7 +46,7 @@ export default function AddRestaurantModal({
               name="name"
               id="name"
               value={name}
-              onChange={handleNameChange}
+              onChange={onNameChange}
               required
             />
           </div>
@@ -61,7 +61,7 @@ export default function AddRestaurantModal({
               cols="30"
               rows="5"
               value={description}
-              onChange={handleDescriptionChange}
+              onChange={onDescriptionChange}
             ></textarea>
             <span className={`${styles.formItem__helpText} text-caption`}>
               메뉴 등 추가 정보를 입력해 주세요.

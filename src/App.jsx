@@ -21,7 +21,7 @@ function App() {
   const isRestaurantDetailModalOpen = !!clickedRestaurant;
   const filteredRestaurants = filterRestaurants(restaurants, filterCategory);
 
-  function handleChange(e) {
+  function handleFilterCategoryChange(e) {
     setFilterCategory(e.target.value);
   }
 
@@ -29,7 +29,7 @@ function App() {
     setClickedRestaurant(restaurant);
   }
 
-  function handleModalClose() {
+  function handleDetailModalClose() {
     setClickedRestaurant(null);
   }
 
@@ -78,7 +78,7 @@ function App() {
       <main>
         <CategoryFilter
           category={filterCategory}
-          onChangeCategory={handleChange}
+          onCategoryChange={handleFilterCategoryChange}
         />
         <RestaurantList
           restaurants={filteredRestaurants}
@@ -89,7 +89,7 @@ function App() {
         {isRestaurantDetailModalOpen && (
           <RestaurantDetailModal
             restaurant={clickedRestaurant}
-            onClose={handleModalClose}
+            onClose={handleDetailModalClose}
           />
         )}
         {isAddRestaurantModalOpen && (
@@ -97,9 +97,9 @@ function App() {
             category={category}
             name={name}
             description={description}
-            handleCategoryChange={handleCategoryChange}
-            handleNameChange={handleNameChange}
-            handleDescriptionChange={handleDescriptionChange}
+            onCategoryChange={handleCategoryChange}
+            onNameChange={handleNameChange}
+            onDescriptionChange={handleDescriptionChange}
             onSubmit={handleSubmit}
             onClose={handleAddRestaurantModalClose}
           />

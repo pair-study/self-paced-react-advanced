@@ -1,6 +1,6 @@
 import styles from "./CategoryFilter.module.css";
 
-export default function CategoryFilter({ category, onChangeCategory }) {
+export default function CategoryFilter({ category, onCategoryChange }) {
   return (
     <section className={styles.categoryFilter}>
       <select
@@ -9,7 +9,7 @@ export default function CategoryFilter({ category, onChangeCategory }) {
         className={styles.categoryFilter__select}
         aria-label="음식점 카테고리 필터"
         value={category}
-        onChange={onChangeCategory}
+        onChange={onCategoryChange}
       >
         <option value="전체">전체</option>
         <option value="한식">한식</option>
