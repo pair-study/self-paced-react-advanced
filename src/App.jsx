@@ -15,11 +15,18 @@ function App() {
       ? restaurants
       : restaurants.filter((restaurant) => restaurant.category === category);
 
+  const handleSelectChange = (e) => {
+    setCategory(e.target.value);
+  };
+
   return (
     <>
       <Header />
       <main>
-        <CategoryFilter category={category} onChangeCategory={setCategory} />
+        <CategoryFilter
+          category={category}
+          onChangeCategory={handleSelectChange}
+        />
         <RestaurantList restaurants={filteredRestaurants} />
       </main>
       <aside>
