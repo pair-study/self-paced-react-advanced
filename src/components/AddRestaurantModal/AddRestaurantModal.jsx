@@ -1,17 +1,32 @@
 import styles from "./AddRestaurantModal.module.css";
 
-export default function AddRestaurantModal() {
+export default function AddRestaurantModal({
+  category,
+  name,
+  description,
+  handleCategoryChange,
+  handleNameChange,
+  handleDescriptionChange,
+  onSubmit,
+  onClose,
+}) {
   return (
     <div className={`${styles.modal} ${styles["modal--open"]}`}>
-      <div className={styles.modal__backdrop}></div>
+      <div className={styles.modal__backdrop} onClick={onClose}></div>
       <div className={styles.modal__container}>
         <h2 className={`${styles.modal__title} text-title`}>새로운 음식점</h2>
-        <form>
+        <form onSubmit={onSubmit}>
           <div className={`${styles.formItem} ${styles["formItem--required"]}`}>
             <label htmlFor="category" className="text-caption">
               카테고리
             </label>
-            <select name="category" id="category" required>
+            <select
+              name="category"
+              id="category"
+              value={category}
+              onChange={handleCategoryChange}
+              required
+            >
               <option value="">선택해 주세요</option>
               <option value="한식">한식</option>
               <option value="중식">중식</option>
@@ -26,7 +41,14 @@ export default function AddRestaurantModal() {
             <label htmlFor="name" className="text-caption">
               이름
             </label>
-            <input type="text" name="name" id="name" required />
+            <input
+              type="text"
+              name="name"
+              id="name"
+              value={name}
+              onChange={handleNameChange}
+              required
+            />
           </div>
 
           <div className={styles.formItem}>
@@ -38,6 +60,8 @@ export default function AddRestaurantModal() {
               id="description"
               cols="30"
               rows="5"
+              value={description}
+              onChange={handleDescriptionChange}
             ></textarea>
             <span className={`${styles.formItem__helpText} text-caption`}>
               메뉴 등 추가 정보를 입력해 주세요.
