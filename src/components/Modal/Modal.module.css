@@ -6,7 +6,7 @@
   display: block;
 }
 
-.modal-backdrop {
+.modal__backdrop {
   position: fixed;
   top: 0;
   right: 0;
@@ -16,7 +16,7 @@
   background: rgba(0, 0, 0, 0.35);
 }
 
-.modal-container {
+.modal__container {
   position: fixed;
   bottom: 0;
   width: 100%;
@@ -27,11 +27,11 @@
   background: var(--grey-100);
 }
 
-.modal-title {
+.modal__title {
   margin-bottom: 36px;
 }
 
-.button-container {
+.modal__button-container {
   display: flex;
 }
 
@@ -65,6 +65,6 @@
   color: var(--grey-100);
 }
 
-.restaurant-info {
+.modal__restaurant-info {
   margin-bottom: 24px;
 }

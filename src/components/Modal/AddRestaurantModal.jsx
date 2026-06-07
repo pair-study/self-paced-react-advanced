@@ -4,9 +4,9 @@ import formStyles from "./AddRestaurantModal.module.css";
 export default function AddRestaurantModal() {
   return (
     <div className={`${modalStyles.modal} ${modalStyles["modal--open"]}`}>
-      <div className={modalStyles["modal-backdrop"]}></div>
-      <div className={modalStyles["modal-container"]}>
-        <h2 className={`${modalStyles["modal-title"]} text-title`}>새로운 음식점</h2>
+      <div className={modalStyles.modal__backdrop}></div>
+      <div className={modalStyles.modal__container}>
+        <h2 className={`${modalStyles.modal__title} text-title`}>새로운 음식점</h2>
         <form>
           {/* 카테고리 */}
           <div
@@ -45,12 +45,12 @@ export default function AddRestaurantModal() {
               cols="30"
               rows="5"
             ></textarea>
-            <span className={`${formStyles["help-text"]} text-caption`}>
+            <span className={`${formStyles["form-item__help-text"]} text-caption`}>
               메뉴 등 추가 정보를 입력해 주세요.
             </span>
           </div>
           {/* 추가 버튼 */}
-          <div className={modalStyles["button-container"]}>
+          <div className={modalStyles["modal__button-container"]}>
             <button
               className={`${modalStyles.button} ${modalStyles["button--primary"]} text-caption`}
             >

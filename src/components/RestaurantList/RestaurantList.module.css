@@ -1,4 +1,4 @@
-.restaurant-list-container {
+.restaurant-list__container {
   display: flex;
   flex-direction: column;
 
@@ -30,7 +30,7 @@
   background: var(--lighten-color);
 }
 
-.category-icon {
+.restaurant__category-icon {
   width: 36px;
   height: 36px;
 }

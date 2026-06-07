@@ -6,7 +6,7 @@ export default function CategoryFilter({ category, onChangeCategory }) {
   };
 
   return (
-    <section className={styles["restaurant-filter-container"]}>
+    <section className={styles["restaurant-filter__container"]}>
       <select
         name="category"
         id="category-filter"

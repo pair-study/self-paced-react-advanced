@@ -17,7 +17,7 @@
   content: "*";
 }
 
-.form-item .help-text {
+.form-item__help-text {
   color: var(--grey-300);
 }
 

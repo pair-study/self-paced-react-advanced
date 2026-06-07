@@ -9,7 +9,7 @@ export default function RestaurantList({ restaurants }) {
           <img
             src={categoryImages[restaurant.category]}
             alt={restaurant.category}
-            className={styles["category-icon"]}
+            className={styles["restaurant__category-icon"]}
           />
         </div>
         <div className={styles.restaurant__info}>
@@ -25,7 +25,7 @@ export default function RestaurantList({ restaurants }) {
   });
 
   return (
-    <section className={styles["restaurant-list-container"]}>
+    <section className={styles["restaurant-list__container"]}>
       <ul className={styles["restaurant-list"]}>{restaurantItem}</ul>
     </section>
   );
