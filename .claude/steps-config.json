@@ -1,0 +1,9 @@
+{
+  "oldRepo": "cho-log/self-paced-react",
+  "steps": {
+    "step1": { "oldPR": 77 },
+    "step2": { "oldPR": 79 },
+    "step3_4": { "oldPR": 84 },
+    "step5": { "oldPR": 87 }
+  }
+}
