@@ -5,34 +5,46 @@
 이번 미션을 통해 다음과 같은 학습 경험들을 쌓는 것을 목표로 한다.
 
 1. controlled 컴포넌트와 uncontrolled 컴포넌트의 차이를 이해하고, 각각 어떤 상황에서 선택하는지 기준을 세운다.
-2. 폼 입력값을 state로 관리하고 부모 컴포넌트로 끌어올리는 패턴(Lifting State Up)을 경험한다.
+2. 어떤 state를 어느 컴포넌트가 소유해야 하는지 판단하고, 필요한 경우 공통 부모로 끌어올리는 패턴(Lifting State Up)을 경험한다.
 3. `children` props를 활용해 재사용 가능한 Modal 컴포넌트를 설계하는 방법을 익힌다.
 
 ---
 
 ## 📝 기능 구현 목록
 
-- [x] Header의 레스토랑 추가 버튼 클릭 시 AddRestaurantModal 열기
-- [x] 폼 입력값(카테고리, 이름, 설명)을 controlled 방식으로 state 관리
-- [x] 추가하기 버튼 클릭 시 레스토랑 목록에 항목 추가
-- [x] (optional) 재사용 가능한 Modal 컴포넌트로 AddRestaurantModal, RestaurantDetailModal 개선
+- [x] Header의 음식점 추가 버튼 클릭 시 AddRestaurantModal 열기
+- [x] 추가하기 버튼 클릭 시 음식점 목록에 항목 추가
+- [x] 재사용 가능한 Modal 컴포넌트로 AddRestaurantModal, RestaurantDetailModal 개선
 
 ---
 
 ## 📚 학습 내용
 
-### Controlled Component
+### Controlled vs Uncontrolled Component
 
-`value`와 `onChange`를 React state에 연결하면 controlled 컴포넌트가 된다. 입력값이 항상 state를 통해 흐르므로 React가 폼 데이터를 완전히 제어한다.
+컴포넌트의 중요한 정보가 **props**에 의해 결정되면 controlled, **지역 state**로 자체 관리되면 uncontrolled이다.
 
-```jsx
-<input
-  value={name}
-  onChange={(e) => setName(e.target.value)}
-/>
-```
+| | Controlled | Uncontrolled |
+|---|---|---|
+| 정보 출처 | props (부모가 제공) | 지역 state (자체 관리) |
+| 부모의 영향 | 동작을 완전히 지정 가능 | 영향을 줄 수 없음 |
+| 유연성 | 여러 컴포넌트와 조정 용이 | 독립적이지만 협력 어려움 |
+| 사용 난이도 | 부모에서 props 설정 필요 | 설정이 적어 사용하기 쉬움 |
 
-반대로 `value`를 연결하지 않으면 DOM이 자체적으로 값을 관리하는 uncontrolled 컴포넌트가 된다.
+**언제 선택하나?**
+- **Controlled** — 부모 컴포넌트와 state를 공유하거나, 여러 컴포넌트의 동작을 함께 조정해야 할 때
+- **Uncontrolled** — 부모와 상태를 공유할 필요 없이 독립적으로 동작해도 될 때
+
+**이 미션에서의 선택:**
+
+controlled/uncontrolled는 컴포넌트 전체에 붙이는 레이블이 아니라, 어떤 정보가 어디서 관리되는지를 기준으로 판단한다. AddRestaurantModal은 두 가지가 혼재한다.
+
+- **폼 데이터** (category, name, description) → 지역 state로 자체 관리 → **uncontrolled**
+- **모달 열림/닫힘** → App이 소유 → **controlled**
+
+모달 열림 상태를 App이 소유하는 이유는 트리거(Header의 추가 버튼)와 모달이 형제 관계이기 때문이다. 형제끼리는 서로의 state에 접근할 수 없으므로 공통 부모인 App으로 state를 끌어올렸다(Lifting State Up).
+
+`onSubmit`, `onClose`는 state가 아닌 콜백이다. "어떤 값을 누가 소유하냐"의 문제가 아니라 이벤트를 부모로 전달하는 통로이므로 controlled/uncontrolled 구분과는 별개다.
 
 ### form submit 기본 동작과 e.preventDefault()
 
@@ -59,7 +71,7 @@ function handleRestaurantSubmit({ category, name, description }) {
 
 ### 추가 후 상태 초기화
 
-레스토랑을 추가한 뒤 폼 입력값을 초기화하지 않으면 모달을 다시 열었을 때 이전 값이 남아있다.
+음식점을 추가한 뒤 폼 입력값을 초기화하지 않으면 모달을 다시 열었을 때 이전 값이 남아있다.
 
 초기 구현에서는 폼 state가 App에 있었기 때문에 추가 완료 시점에 명시적으로 초기화했다.
 
