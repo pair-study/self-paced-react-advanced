@@ -1,4 +1,5 @@
 import styles from "./Header.module.css";
+import addButtonImg from "../../assets/add-button.png";
 
 export default function Header() {
   return (
@@ -9,7 +10,7 @@ export default function Header() {
         className={styles.gnb__button}
         aria-label="음식점 추가"
       >
-        <img src="../templates/add-button.png" alt="음식점 추가" />
+        <img src={addButtonImg} alt="음식점 추가" />
       </button>
     </header>
   );

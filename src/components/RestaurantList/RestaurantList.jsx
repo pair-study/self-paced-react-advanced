@@ -1,13 +1,5 @@
 import styles from "./RestaurantList.module.css";
-
-const categoryImages = {
-  한식: "../templates/category-korean.png",
-  중식: "../templates/category-chinese.png",
-  일식: "../templates/category-japanese.png",
-  양식: "../templates/category-western.png",
-  아시안: "../templates/category-asian.png",
-  기타: "../templates/category-etc.png",
-};
+import { categoryImages } from "../../constants/categoryImages";
 
 export default function RestaurantList({ restaurants }) {
   const restaurantItem = restaurants.map((restaurant) => {
