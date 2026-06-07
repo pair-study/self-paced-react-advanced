@@ -1,6 +1,6 @@
 import { useState } from "react";
 import "./App.css";
-import { restaurants } from "./utils/restaurants";
+import { restaurants } from "./constants/restaurants";
 import Header from "./components/Header/Header";
 import CategoryFilter from "./components/CategoryFilter/CategoryFilter";
 import RestaurantList from "./components/RestaurantList/RestaurantList";
