@@ -1,15 +1,16 @@
-import styles from "./Modal.module.css";
+import modalStyles from "./Modal.module.css";
+import formStyles from "./AddRestaurantModal.module.css";
 
 export default function AddRestaurantModal() {
   return (
-    <div className={styles.modal}>
-      <div className={styles["modal-backdrop"]}></div>
-      <div className={styles["modal-container"]}>
-        <h2 className={`${styles["modal-title"]} text-title`}>새로운 음식점</h2>
+    <div className={`${modalStyles.modal} ${modalStyles["modal--open"]}`}>
+      <div className={modalStyles["modal-backdrop"]}></div>
+      <div className={modalStyles["modal-container"]}>
+        <h2 className={`${modalStyles["modal-title"]} text-title`}>새로운 음식점</h2>
         <form>
           {/* 카테고리 */}
           <div
-            className={`${styles["form-item"]} ${styles["form-item--required"]}`}
+            className={`${formStyles["form-item"]} ${formStyles["form-item--required"]}`}
           >
             <label htmlFor="category" className="text-caption">
               카테고리
@@ -26,7 +27,7 @@ export default function AddRestaurantModal() {
           </div>
           {/* 음식점 이름 */}
           <div
-            className={`${styles["form-item"]} ${styles["form-item--required"]}`}
+            className={`${formStyles["form-item"]} ${formStyles["form-item--required"]}`}
           >
             <label htmlFor="name" className="text-caption">
               이름
@@ -34,7 +35,7 @@ export default function AddRestaurantModal() {
             <input type="text" name="name" id="name" required />
           </div>
           {/* 설명 */}
-          <div className={styles["form-item"]}>
+          <div className={formStyles["form-item"]}>
             <label htmlFor="description" className="text-caption">
               설명
             </label>
@@ -44,14 +45,14 @@ export default function AddRestaurantModal() {
               cols="30"
               rows="5"
             ></textarea>
-            <span className={`${styles["help-text"]} text-caption`}>
+            <span className={`${formStyles["help-text"]} text-caption`}>
               메뉴 등 추가 정보를 입력해 주세요.
             </span>
           </div>
           {/* 추가 버튼 */}
-          <div className={styles["button-container"]}>
+          <div className={modalStyles["button-container"]}>
             <button
-              className={`${styles.button} ${styles["button--primary"]} text-caption`}
+              className={`${modalStyles.button} ${modalStyles["button--primary"]} text-caption`}
             >
               추가하기
             </button>

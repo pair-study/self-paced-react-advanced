@@ -1,11 +1,11 @@
 import { useState } from "react";
 import "./App.css";
 import { restaurants } from "./utils/restaurants";
-import Header from "./Header";
-import CategoryFilter from "./CategoryFilter";
-import RestaurantList from "./RestaurantList";
-import RestaurantDetailModal from "./RestaurantDetailModal";
-import AddRestaurantModal from "./AddRestaurantModal";
+import Header from "./components/Header/Header";
+import CategoryFilter from "./components/CategoryFilter/CategoryFilter";
+import RestaurantList from "./components/RestaurantList/RestaurantList";
+import RestaurantDetailModal from "./components/Modal/RestaurantDetailModal";
+import AddRestaurantModal from "./components/Modal/AddRestaurantModal";
 
 function App() {
   const [category, setCategory] = useState("전체");

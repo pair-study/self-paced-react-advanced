@@ -2,7 +2,7 @@ import styles from "./Modal.module.css";
 
 export default function RestaurantDetailModal() {
   return (
-    <div className={styles.modal}>
+    <div className={`styles.modal ${styles["modal--open"]}`}>
       <div className={styles["modal-backdrop"]}></div>
       <div className={styles["modal-container"]}>
         <h2 className={`${styles["modal-title"]} text-title`}>음식점 이름</h2>
