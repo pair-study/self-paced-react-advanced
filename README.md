@@ -88,6 +88,22 @@ setDescription("");
 
 ## 🤔 고민했던 문제와 해결 과정에서 배운 점
 
+### 어떤 state를 어느 컴포넌트가 소유해야 하는가
+
+음식점 추가 기능을 구현하면서 다음 state들이 필요하다고 생각했다.
+
+- `restaurants` — 음식점 목록
+- `category`, `name`, `description` — 폼 입력값
+- `isAddRestaurantModalOpen` - 모달 열림/닫힘
+
+이 state들을 어느 컴포넌트에 선언할지 결정하기 위해 "이 state를 누가 필요로 하는가"를 기준으로 판단했다.
+
+`restaurants`는 AddRestaurantModal(추가 시 갱신)과 RestaurantList(목록 렌더링) 모두 필요하다. 두 컴포넌트는 형제 관계라 서로의 state에 직접 접근할 수 없으므로, 공통 부모인 App으로 끌어올렸다(Lifting State Up).
+
+`category`, `name`, `description`은 폼을 입력하는 동안 AddRestaurantModal 안에서만 쓰인다. 추가 완료 시점에 최종 데이터만 부모로 전달하면 되므로, 굳이 App까지 올릴 필요가 없다. AddRestaurantModal이 직접 소유한다.
+
+`isAddRestaurantModalOpen`도 같은 기준으로 판단했다. 모달을 여는 트리거는 Header의 추가 버튼이고, 실제로 열리는 것은 AddRestaurantModal이다. 두 컴포넌트는 형제 관계라 서로의 state에 접근할 수 없으므로 공통 부모인 App이 소유해야 한다.
+
 ### 식당을 추가해도 목록이 업데이트되지 않는 문제
 
 `handleSubmit`에서 `setRestaurants`가 호출되는데도 목록이 바뀌지 않아서 원인을 찾아봤다. `e.preventDefault()`가 없어서 submit 시 페이지가 새로고침되고, state 업데이트가 반영되기 전에 초기 상태로 되돌아가는 것이었다. state 업데이트 자체는 올바르게 작성되어 있었지만 브라우저 기본 동작을 막지 않아서 생긴 문제였다.
