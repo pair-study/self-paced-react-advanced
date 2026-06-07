@@ -179,7 +179,12 @@ const filteredRestaurants =
 4. **상수 분리 및 디렉토리 정리**
    - `categoryImages` 매핑 객체를 `src/constants/categoryImages.js`로 분리했다.
    - `restaurants` 데이터를 `src/utils/`에서 의미상 더 적합한 `src/constants/`로 이동했다.
-   - 카테고리 목록 상수를 `src/constants/categories.js`로 분리하여 `CategoryFilter`와 `AddRestaurantModal`에서 공유하도록 했다.
+   - 카테고리 목록 상수를 `src/constants/categories.js`로 분리하여 `CategoryFilter`와 `AddRestaurantModal`에서 공유하도록 했다. 두 컴포넌트가 사용하는 목록이 달라 `CATEGORIES`(6개 카테고리)와 `FILTER_OPTIONS`("전체" 포함 7개)를 각각 분리하고, `FILTER_OPTIONS`는 스프레드 문법으로 `CATEGORIES`를 재활용했다.
+
+```js
+export const CATEGORIES = ["한식", "중식", "일식", "양식", "아시안", "기타"];
+export const FILTER_OPTIONS = ["전체", ...CATEGORIES];
+```
 
 5. **이벤트 핸들러 위치 변경**
    - `setCategory`를 props로 직접 전달하던 방식에서, `App.jsx`에 `handleSelectChange`를 정의하여 전달하는 방식으로 변경했다.
