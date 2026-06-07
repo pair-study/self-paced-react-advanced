@@ -1,21 +1,22 @@
+import { useState } from "react";
 import styles from "./AddRestaurantModal.module.css";
 
-export default function AddRestaurantModal({
-  category,
-  name,
-  description,
-  onCategoryChange,
-  onNameChange,
-  onDescriptionChange,
-  onSubmit,
-  onClose,
-}) {
+export default function AddRestaurantModal({ onSubmit, onClose }) {
+  const [category, setCategory] = useState("");
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    onSubmit({ category, name, description });
+  }
+
   return (
     <div className={`${styles.modal} ${styles["modal--open"]}`}>
       <div className={styles.modal__backdrop} onClick={onClose}></div>
       <div className={styles.modal__container}>
         <h2 className={`${styles.modal__title} text-title`}>새로운 음식점</h2>
-        <form onSubmit={onSubmit}>
+        <form onSubmit={handleSubmit}>
           <div className={`${styles.formItem} ${styles["formItem--required"]}`}>
             <label htmlFor="category" className="text-caption">
               카테고리
@@ -24,7 +25,7 @@ export default function AddRestaurantModal({
               name="category"
               id="category"
               value={category}
-              onChange={onCategoryChange}
+              onChange={(e) => setCategory(e.target.value)}
               required
             >
               <option value="">선택해 주세요</option>
@@ -46,7 +47,7 @@ export default function AddRestaurantModal({
               name="name"
               id="name"
               value={name}
-              onChange={onNameChange}
+              onChange={(e) => setName(e.target.value)}
               required
             />
           </div>
@@ -61,7 +62,7 @@ export default function AddRestaurantModal({
               cols="30"
               rows="5"
               value={description}
-              onChange={onDescriptionChange}
+              onChange={(e) => setDescription(e.target.value)}
             ></textarea>
             <span className={`${styles.formItem__helpText} text-caption`}>
               메뉴 등 추가 정보를 입력해 주세요.

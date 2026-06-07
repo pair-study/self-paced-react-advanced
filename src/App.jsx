@@ -14,9 +14,6 @@ function App() {
   const [isAddRestaurantModalOpen, setIsAddRestaurantModalOpen] =
     useState(false);
   const [restaurants, setRestaurants] = useState(RESTAURANTS);
-  const [category, setCategory] = useState("");
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
 
   const isRestaurantDetailModalOpen = !!clickedRestaurant;
   const filteredRestaurants = filterRestaurants(restaurants, filterCategory);
@@ -41,21 +38,7 @@ function App() {
     setIsAddRestaurantModalOpen(false);
   }
 
-  function handleCategoryChange(e) {
-    setCategory(e.target.value);
-  }
-
-  function handleNameChange(e) {
-    setName(e.target.value);
-  }
-
-  function handleDescriptionChange(e) {
-    setDescription(e.target.value);
-  }
-
-  function handleSubmit(e) {
-    e.preventDefault();
-
+  function handleSubmit({ category, name, description }) {
     setRestaurants([
       ...restaurants,
       {
@@ -65,11 +48,7 @@ function App() {
         description,
       },
     ]);
-
     setIsAddRestaurantModalOpen(false);
-    setCategory("");
-    setName("");
-    setDescription("");
   }
 
   return (
@@ -94,12 +73,6 @@ function App() {
         )}
         {isAddRestaurantModalOpen && (
           <AddRestaurantModal
-            category={category}
-            name={name}
-            description={description}
-            onCategoryChange={handleCategoryChange}
-            onNameChange={handleNameChange}
-            onDescriptionChange={handleDescriptionChange}
             onSubmit={handleSubmit}
             onClose={handleAddRestaurantModalClose}
           />
