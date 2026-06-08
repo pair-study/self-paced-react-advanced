@@ -141,8 +141,58 @@ function Modal({ title, onClose, children }) {
 
 `AddRestaurantModal`과 `RestaurantDetailModal`이 backdrop, container, title 구조를 중복으로 갖고 있었다. 공통 구조를 `Modal` 컴포넌트로 분리하고, 각 모달은 `children`으로 고유 내용만 넘기도록 리팩토링했다.
 
+**2. 배열 state 업데이트를 함수형 업데이트로 변경**
+
+`[...newRestaurants, newRestaurant]`에서 `(prev) => [...prev, newRestaurant]`로 변경했다. 이전 state에 의존하는 업데이트는 함수형 업데이트가 더 안전하다.
+
+**3. id 생성을 `crypto.randomUUID()`로 변경**
+
+`Date.now()` 대신 `crypto.randomUUID()`를 사용하도록 변경했다. 밀리초 단위 충돌 가능성을 제거하고 고유성을 보장한다.
+
 ## 과거 코드와 비교
 
 ### 달라진 점
 
+**1. 폼 입력값 읽기 방식 — Uncontrolled → Controlled**
+
+| 구분 | 과거 코드 | 현재 코드 |
+|------|---------|---------|
+| 방식 | Uncontrolled (`FormData`) | Controlled (`useState`) |
+| 값 접근 | 제출 시 DOM에서 읽음 | state로 실시간 관리 |
+| 코드량 | 적음 | 많음 |
+
+과거 코드는 state 없이 폼 제출 시 `FormData`로 DOM에서 한 번에 읽었다. 각 input에 `name` 속성이 있으면 키-값 쌍으로 꺼낼 수 있어 코드가 간결하다.
+
+```jsx
+// 과거 — Uncontrolled
+const fd = new FormData(e.currentTarget);
+onAdd({ category: fd.get("category"), name: fd.get("name") });
+
+// 현재 — Controlled
+const [name, setName] = useState("");
+<input value={name} onChange={(e) => setName(e.target.value)} />
+```
+
 ### 과거 코드에서 배운 점
+
+**1. 함수형 업데이트**
+
+리뷰어 코드에서 배열 state 업데이트 시 함수형 업데이트를 사용했다.
+
+```jsx
+// 기존 코드 — newRestaurants를 직접 참조
+setNewRestaurants([...newRestaurants, newRestaurant]);
+
+// 함수형 업데이트 — React가 최신 state를 prev로 전달
+setNewRestaurants((prev) => [...prev, newRestaurant]);
+```
+
+React의 state 업데이트는 즉시 반영되지 않아 렌더링 사이클 사이에 `newRestaurants`가 오래된 값일 수 있다. `prev`는 React가 보장하는 최신 state이므로, 이전 state를 기반으로 새 state를 만들 때는 함수형 업데이트가 더 안전하다.
+
+`prev`는 관례적인 이름일 뿐이며, 각 setter에 묶인 해당 state의 최신값이 전달된다. state가 여러 개여도 setter가 다르므로 섞이지 않는다.
+
+**2. `crypto.randomUUID()`**
+
+리뷰어 피드백: *"아주 짧은 시간 안에 여러 항목이 추가될 경우 `Date.now()`는 중복된 id가 생성될 가능성이 있습니다. `crypto.randomUUID()`를 고려해보세요."*
+
+`Date.now()`는 밀리초 단위 숫자라 짧은 시간 안에 두 번 호출되면 같은 값이 나올 수 있다. `crypto.randomUUID()`는 브라우저 내장 함수로 `"550e8400-e29b-41d4-a716-446655440000"` 형태의 충돌 없는 고유 ID를 생성한다.
