@@ -11,7 +11,7 @@ export default function AddRestaurantModal({ onSubmit, onClose }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit({ id: Date.now(), category, name, description });
+    onSubmit({ id: crypto.randomUUID(), category, name, description });
   };
 
   return (
