@@ -69,6 +69,27 @@ setClickedRestaurant(restaurant);
 
 모달 열림 여부를 관리하기 위해 별도 boolean state(`isModalOpen`)를 선언하지 않아도 된다. `clickedRestaurant`가 null이면 닫힘, 객체면 열림 — 기존 state에서 의미를 도출할 수 있기 때문이다.
 
+### 4. 웹 접근성 (a11y) — 클릭 가능한 비버튼 요소
+
+`<li>` 같은 비인터랙티브 요소에 `onClick`을 달면 마우스 사용자는 동작하지만, 키보드 사용자는 접근할 수 없다. 다음 세 가지를 함께 추가해야 한다.
+
+- `role="button"`: 스크린 리더에게 이 요소가 버튼처럼 동작함을 알린다.
+- `tabIndex={0}`: Tab 키로 포커스를 받을 수 있게 한다.
+- `onKeyDown`: Enter 또는 Space 키 입력 시 onClick과 동일한 동작을 수행한다.
+
+```jsx
+<li
+  role="button"
+  tabIndex={0}
+  onClick={() => onRestaurantClick(restaurant)}
+  onKeyDown={(e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      onRestaurantClick(restaurant);
+    }
+  }}
+>
+```
+
 ---
 
 ## 🤔 고민했던 문제와 해결 과정에서 배운 점
@@ -95,8 +116,47 @@ const handleRestaurantClick = (restaurant) => {
 
 ## 🛠 리팩토링
 
+**1. 클릭 가능한 `<li>`에 웹 접근성 속성 추가**
+
+`<li>`에 `onClick`만 달면 키보드 사용자는 접근할 수 없다. 과거 코드 리뷰에서 받은 피드백을 반영하여 `role="button"`, `tabIndex={0}`, `onKeyDown`을 추가했다.
+
+---
+
 ## 과거 코드와 비교
 
 ### 달라진 점
 
+**1. State 통합 — boolean 분리 → 단일 객체 state**
+
+| 구분 | 과거 코드 | 현재 코드 |
+|------|---------|---------|
+| 모달 상태 관리 | `selected` + `isModalOpen` 2개 | `clickedRestaurant` 1개 |
+
+과거엔 `selected`(선택된 음식점)와 `isModalOpen`(열림 여부)를 따로 관리했다. 두 상태는 항상 함께 변하기 때문에 불필요한 중복이 생긴다. 현재는 `clickedRestaurant`가 null이면 닫힘, 객체면 열림으로 하나의 state에서 두 의미를 모두 표현했다.
+
 ### 과거 코드에서 배운 점
+
+**1. 파생 상태는 state로 선언하지 않는다**
+
+리뷰어 피드백: *"두 상태가 서로 의존적인 관계인데 분리해서 관리할 경우 일관성이 깨질 수 있습니다. 불필요한 상태는 제거해 하나의 상태로 관리해보는 건 어떨까요?"*
+
+다른 state에서 계산 가능한 값을 별도 state로 선언하면 두 상태가 불일치할 위험이 생긴다. 기존 state만으로 표현 가능하다면 파생 상태로 처리하는 것이 더 안전하다.
+
+**2. 웹 접근성 — 클릭 가능한 `<li>`**
+
+리뷰어 피드백: *"`<li>`에 onClick 이벤트를 사용할 경우 role, tabIndex, onKeyDown을 추가해 키보드 사용자도 접근할 수 있도록 해야 합니다."*
+
+```jsx
+<li
+  role="button"
+  tabIndex={0}
+  onClick={() => onRestaurantClick(restaurant)}
+  onKeyDown={(e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      onRestaurantClick(restaurant);
+    }
+  }}
+>
+```
+
+마우스 없이 Tab + Enter로도 동작하도록 보장하는 것이 웹 접근성의 기본이다.
