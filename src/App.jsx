@@ -14,7 +14,7 @@ function App() {
   const [newRestaurants, setNewRestaurants] = useState(restaurants);
 
   const handleFormSubmit = (newRestaurant) => {
-    setNewRestaurants([...newRestaurants, newRestaurant]);
+    setNewRestaurants((prev) => [...prev, newRestaurant]);
     setIsAddModalOpen(false);
   };
 
