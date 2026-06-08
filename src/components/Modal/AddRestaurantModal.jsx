@@ -4,7 +4,7 @@ import { CATEGORIES } from "../../constants/categories";
 
 export default function AddRestaurantModal() {
   return (
-    <div className={`${modalStyles.modal} ${modalStyles["modal--open"]}`}>
+    <div className={modalStyles.modal}>
       <div className={modalStyles.modal__backdrop}></div>
       <div className={modalStyles.modal__container}>
         <h2 className={`${modalStyles.modal__title} text-title`}>새로운 음식점</h2>

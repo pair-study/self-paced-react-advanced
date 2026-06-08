@@ -9,6 +9,7 @@ import AddRestaurantModal from "./components/Modal/AddRestaurantModal";
 
 function App() {
   const [category, setCategory] = useState("전체");
+  const [clickedRestaurant, setClickedRestaurant] = useState(null);
 
   const filteredRestaurants =
     category === "전체"
@@ -19,6 +20,14 @@ function App() {
     setCategory(e.target.value);
   };
 
+  const handleRestaurantClick = (restaurant) => {
+    setClickedRestaurant(restaurant);
+  };
+
+  const handleModalClose = () => {
+    setClickedRestaurant(null);
+  };
+
   return (
     <>
       <Header />
@@ -27,10 +36,18 @@ function App() {
           category={category}
           onChangeCategory={handleSelectChange}
         />
-        <RestaurantList restaurants={filteredRestaurants} />
+        <RestaurantList
+          restaurants={filteredRestaurants}
+          onRestaurantClick={handleRestaurantClick}
+        />
       </main>
       <aside>
-        <RestaurantDetailModal />
+        {clickedRestaurant && (
+          <RestaurantDetailModal
+            clickedRestaurant={clickedRestaurant}
+            onClose={handleModalClose}
+          />
+        )}
         <AddRestaurantModal />
       </aside>
     </>
