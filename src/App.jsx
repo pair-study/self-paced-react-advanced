@@ -10,11 +10,18 @@ import AddRestaurantModal from "./components/Modal/AddRestaurantModal";
 function App() {
   const [category, setCategory] = useState("전체");
   const [clickedRestaurant, setClickedRestaurant] = useState(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [newRestaurants, setNewRestaurants] = useState(restaurants);
+
+  const handleFormSubmit = (newRestaurant) => {
+    setNewRestaurants([...newRestaurants, newRestaurant]);
+    setIsAddModalOpen(false);
+  };
 
   const filteredRestaurants =
     category === "전체"
-      ? restaurants
-      : restaurants.filter((restaurant) => restaurant.category === category);
+      ? newRestaurants
+      : newRestaurants.filter((restaurant) => restaurant.category === category);
 
   const handleSelectChange = (e) => {
     setCategory(e.target.value);
@@ -28,9 +35,17 @@ function App() {
     setClickedRestaurant(null);
   };
 
+  const handleAddModalOpen = () => {
+    setIsAddModalOpen(true);
+  };
+
+  const handleAddModalClose = () => {
+    setIsAddModalOpen(false);
+  };
+
   return (
     <>
-      <Header />
+      <Header onClick={handleAddModalOpen} />
       <main>
         <CategoryFilter
           category={category}
@@ -48,7 +63,12 @@ function App() {
             onClose={handleModalClose}
           />
         )}
-        <AddRestaurantModal />
+        {isAddModalOpen && (
+          <AddRestaurantModal
+            onSubmit={handleFormSubmit}
+            onClose={handleAddModalClose}
+          />
+        )}
       </aside>
     </>
   );
