@@ -24,9 +24,86 @@ DOM에서 직접 읽는 방식(uncontrolled)의 차이를 이해하고,
 
 ## 📝 기능 구현 목록
 
+**1. 헤더 추가 버튼 클릭 시 음식점 추가 모달 열기**
+
+- `isAddModalOpen` boolean state를 App.jsx에 추가한다. (초기값: false)
+- `handleAddModalOpen` 핸들러를 정의하여 `Header`에 전달한다.
+- `isAddModalOpen`이 true일 때만 `AddRestaurantModal`을 렌더링한다.
+
+**2. 음식점 추가 폼 제출 시 목록에 추가**
+
+- `restaurants` 상수를 state로 변환한다.
+- `AddRestaurantModal`에서 category, name, description을 controlled input으로 관리한다.
+- 폼 제출 시 `e.preventDefault()`로 새로고침을 막고, `onSubmit`으로 입력값을 App에 전달한다.
+- App의 `handleFormSubmit`에서 목록에 추가하고 모달을 닫는다.
+
+```jsx
+const handleFormSubmit = (newRestaurant) => {
+  setNewRestaurants([...newRestaurants, newRestaurant]);
+  setIsAddModalOpen(false);
+};
+```
+
+**3. 모달 닫기**
+
+- backdrop 클릭 또는 추가 완료 시 `onClose`를 통해 `setIsAddModalOpen(false)` 호출한다.
+
+---
+
 ## 📚 학습 내용
 
+### 1. Controlled vs Uncontrolled Input
+
+폼 입력값을 다루는 두 가지 방식이다.
+
+**Controlled** — 입력값을 React state로 관리한다. `value`로 state를 바인딩하고, `onChange`로 변화를 감지해 state를 업데이트한다. React가 값의 단일 출처(source of truth)가 된다.
+
+```jsx
+const [name, setName] = useState("");
+
+<input
+  value={name}
+  onChange={(e) => setName(e.target.value)}
+/>
+```
+
+**Uncontrolled** — state 없이, 제출 시점에 DOM에서 값을 직접 읽는다. `e.target.elements` 또는 `FormData`를 활용한다.
+
+```jsx
+const handleSubmit = (e) => {
+  e.preventDefault();
+  const name = e.target.elements.name.value;
+};
+```
+
+| | Controlled | Uncontrolled |
+|---|---|---|
+| 값 관리 | React state | DOM |
+| 값 접근 시점 | 언제든지 | 제출 시 |
+| 실시간 유효성 검사 | 가능 | 어려움 |
+| 코드량 | 많음 | 적음 |
+
+이번 미션에서는 Controlled 방식을 사용했다.
+
+### 2. 배열 state 업데이트
+
+배열 state에 항목을 추가할 때 `push`는 직접 변경이라 리렌더링이 트리거되지 않는다. 스프레드 연산자로 새 배열을 만들어야 한다.
+
+```jsx
+setNewRestaurants([...newRestaurants, newRestaurant]);
+```
+
+---
+
 ## 🤔 고민했던 문제와 해결 과정에서 배운 점
+
+### 1. e.preventDefault() 위치
+
+폼 submit 이벤트의 기본 동작(페이지 새로고침)을 막으려면 `e.preventDefault()`를 이벤트가 발생하는 곳에서 호출해야 한다. App의 `handleFormSubmit`이 받는 건 이벤트가 아니라 음식점 객체이기 때문에, `AddRestaurantModal` 내부의 `handleSubmit`에서 처리해야 한다.
+
+### 2. `<select>`의 controlled input 연결
+
+`value`와 `onChange`는 `<option>`이 아닌 `<select>`에 달아야 한다. `<option>`의 `value`는 해당 옵션이 선택됐을 때 `e.target.value`로 읽히는 값이고, `<select>`의 `value`가 현재 선택된 상태를 React state와 동기화한다.
 
 ## 🛠 리팩토링
 
