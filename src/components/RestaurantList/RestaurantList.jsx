@@ -9,7 +9,14 @@ export default function RestaurantList({ restaurants, onRestaurantClick }) {
           <li
             className={styles.restaurant}
             key={restaurant.id}
+            role="button"
+            tabIndex={0}
             onClick={() => onRestaurantClick(restaurant)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                onRestaurantClick(restaurant);
+              }
+            }}
           >
             <div className={styles.restaurant__category}>
               <img
