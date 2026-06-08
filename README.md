@@ -48,6 +48,12 @@ const handleFormSubmit = (newRestaurant) => {
 
 - backdrop 클릭 또는 추가 완료 시 `onClose`를 통해 `setIsAddModalOpen(false)` 호출한다.
 
+**[optional] 재사용 가능한 Modal 컴포넌트 구현**
+
+- `backdrop`, `container`, `title`을 공통으로 갖는 `Modal` 컴포넌트를 만든다.
+- `title`, `onClose`를 props로, 각 모달의 고유 내용은 `children`으로 받는다.
+- `AddRestaurantModal`, `RestaurantDetailModal`이 `Modal`을 내부에서 사용하도록 리팩토링한다.
+
 ---
 
 ## 📚 학습 내용
@@ -93,6 +99,30 @@ const handleSubmit = (e) => {
 setNewRestaurants([...newRestaurants, newRestaurant]);
 ```
 
+### 3. children prop
+
+컴포넌트 태그 사이에 넣은 JSX가 `children`이라는 특수 prop으로 전달된다.
+
+```jsx
+<Modal title="새로운 음식점" onClose={onClose}>
+  <form>...</form>   {/* 이게 children */}
+</Modal>
+
+function Modal({ title, onClose, children }) {
+  return (
+    <div>
+      <div onClick={onClose}></div>
+      <div>
+        <h2>{title}</h2>
+        {children}  {/* <form>...</form>이 여기에 렌더링됨 */}
+      </div>
+    </div>
+  );
+}
+```
+
+공통 구조(껍데기)는 `Modal`이 담당하고, 각 모달은 고유한 내용만 children으로 전달하면 된다.
+
 ---
 
 ## 🤔 고민했던 문제와 해결 과정에서 배운 점
@@ -106,6 +136,10 @@ setNewRestaurants([...newRestaurants, newRestaurant]);
 `value`와 `onChange`는 `<option>`이 아닌 `<select>`에 달아야 한다. `<option>`의 `value`는 해당 옵션이 선택됐을 때 `e.target.value`로 읽히는 값이고, `<select>`의 `value`가 현재 선택된 상태를 React state와 동기화한다.
 
 ## 🛠 리팩토링
+
+**1. 재사용 가능한 Modal 컴포넌트 추출**
+
+`AddRestaurantModal`과 `RestaurantDetailModal`이 backdrop, container, title 구조를 중복으로 갖고 있었다. 공통 구조를 `Modal` 컴포넌트로 분리하고, 각 모달은 `children`으로 고유 내용만 넘기도록 리팩토링했다.
 
 ## 과거 코드와 비교
 
