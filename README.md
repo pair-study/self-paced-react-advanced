@@ -1,181 +1,241 @@
-# 재사용 가능한 컴포넌트 설계
+# API 요청과 비동기 처리
 
 ## 🎯 개인 목표 및 목표 달성을 위한 행동 가이드
 
 이번 미션을 통해 다음과 같은 학습 경험들을 쌓는 것을 목표로 한다.
 
-1. controlled 컴포넌트와 uncontrolled 컴포넌트의 차이를 이해하고, 각각 어떤 상황에서 선택하는지 기준을 세운다.
-2. 어떤 state를 어느 컴포넌트가 소유해야 하는지 판단하고, 필요한 경우 공통 부모로 끌어올리는 패턴(Lifting State Up)을 경험한다.
-3. `children` props를 활용해 재사용 가능한 Modal 컴포넌트를 설계하는 방법을 익힌다.
+1. side effect가 무엇인지 이해하고, `useEffect`가 왜 필요한지 설명할 수 있다.
+2. Promise가 무엇인지 이해하고, async/await가 Promise를 어떻게 다루는지 설명할 수 있다.
+3. `fetch`로 GET/POST 요청을 보내고 응답을 처리하는 방법을 익히고, `await`를 어디에 붙여야 하는지 스스로 판단할 수 있다.
 
 ---
 
 ## 📝 기능 구현 목록
 
-- [x] Header의 음식점 추가 버튼 클릭 시 AddRestaurantModal 열기
-- [x] 추가하기 버튼 클릭 시 음식점 목록에 항목 추가
-- [x] 재사용 가능한 Modal 컴포넌트로 AddRestaurantModal, RestaurantDetailModal 개선
+- [x] API로 음식점 목록을 불러와 RestaurantList에 렌더링
+- [x] 음식점 추가 시 POST 요청 후 목록 재조회
 
 ---
 
 ## 📚 학습 내용
 
-### Controlled vs Uncontrolled Component
+### useEffect와 side effect
 
-컴포넌트의 중요한 정보가 **props**에 의해 결정되면 controlled, **지역 state**로 자체 관리되면 uncontrolled이다.
+React 컴포넌트는 렌더링 중에 외부 시스템(서버, 타이머, DOM 직접 조작 등)에 영향을 주면 안 된다. 이런 작업을 side effect라고 하고, `useEffect`는 렌더링이 끝난 뒤 이를 안전하게 실행하는 공간이다.
 
-| | Controlled | Uncontrolled |
+```jsx
+useEffect(() => {
+  // 렌더링 이후 실행 — 서버 요청, 구독, DOM 조작 등
+}, []);
+```
+
+의존성 배열 `[]`를 넘기면 컴포넌트가 처음 마운트될 때 한 번만 실행된다. 배열을 아예 생략하면 매 렌더링마다 실행되어 무한 루프가 생길 수 있다.
+
+### useEffect 안에서 async/await 쓰는 법
+
+`useEffect`의 콜백은 직접 `async`로 만들 수 없다. `async` 함수는 항상 Promise를 반환하는데, React는 `useEffect` 콜백의 반환값을 cleanup 함수로 기대하기 때문이다.
+
+```jsx
+// ❌ 이렇게 하면 안 됨 — async 콜백이 Promise를 반환해서 React가 경고
+useEffect(async () => {
+  const data = await getRestaurants();
+  setRestaurants(data);
+}, []);
+
+// ✅ 내부에서 async 함수를 정의하고 호출
+useEffect(() => {
+  const fetchRestaurants = async () => {
+    const data = await getRestaurants();
+    setRestaurants(data);
+  };
+  fetchRestaurants();
+}, []);
+```
+
+### async/await를 어디에 붙여야 하는가
+
+`await`는 Promise를 반환하는 함수 앞에 붙인다. `await`를 쓰는 함수 자신은 반드시 `async`여야 한다. 이 규칙이 호출 체인을 따라 전파된다.
+
+```
+fetch()                    → Promise 반환
+getRestaurants()           → 내부에서 await fetch() → async 필요
+handleRestaurantSubmit()   → 내부에서 await getRestaurants() → async 필요
+```
+
+실수하기 쉬운 패턴: `async` 함수를 호출할 때 `await`를 빠뜨리면 Promise가 풀리기 전에 다음 줄이 실행된다.
+
+```jsx
+// ❌ await 누락 — POST가 완료되기 전에 GET 실행, 새 항목이 목록에 없을 수 있음
+async function handleRestaurantSubmit(restaurant) {
+  addRestaurant(restaurant);  // await 없음
+  const data = await getRestaurants();
+  setRestaurants(data);
+}
+
+// ✅ POST 완료를 기다린 뒤 GET
+async function handleRestaurantSubmit(restaurant) {
+  await addRestaurant(restaurant);
+  const data = await getRestaurants();
+  setRestaurants(data);
+}
+```
+
+### api.js 파일 위치
+
+현재 `src/api.js`에 두었다. 프로젝트 규모에 따라 관례가 다르다.
+
+| 규모 | 구조 | 예시 |
 |---|---|---|
-| 정보 출처 | props (부모가 제공) | 지역 state (자체 관리) |
-| 부모의 영향 | 동작을 완전히 지정 가능 | 영향을 줄 수 없음 |
-| 유연성 | 여러 컴포넌트와 조정 용이 | 독립적이지만 협력 어려움 |
-| 사용 난이도 | 부모에서 props 설정 필요 | 설정이 적어 사용하기 쉬움 |
+| 소규모 | 단일 파일 | `src/api.js` |
+| 중규모 | 도메인별 분리 | `src/api/restaurants.js`, `src/api/users.js` |
+| 대규모 | services 레이어 | `src/services/restaurantService.js` |
 
-**언제 선택하나?**
-- **Controlled** — 부모 컴포넌트와 state를 공유하거나, 여러 컴포넌트의 동작을 함께 조정해야 할 때
-- **Uncontrolled** — 부모와 상태를 공유할 필요 없이 독립적으로 동작해도 될 때
-
-**이 미션에서의 선택:**
-
-controlled/uncontrolled는 컴포넌트 전체에 붙이는 레이블이 아니라, 어떤 정보가 어디서 관리되는지를 기준으로 판단한다. AddRestaurantModal은 두 가지가 혼재한다.
-
-- **폼 데이터** (category, name, description) → 지역 state로 자체 관리 → **uncontrolled**
-- **모달 열림/닫힘** → App이 소유 → **controlled**
-
-모달 열림 상태를 App이 소유하는 이유는 트리거(Header의 추가 버튼)와 모달이 형제 관계이기 때문이다. 형제끼리는 서로의 state에 접근할 수 없으므로 공통 부모인 App으로 state를 끌어올렸다(Lifting State Up).
-
-`onSubmit`, `onClose`는 state가 아닌 콜백이다. "어떤 값을 누가 소유하냐"의 문제가 아니라 이벤트를 부모로 전달하는 통로이므로 controlled/uncontrolled 구분과는 별개다.
-
-### form submit 기본 동작과 e.preventDefault()
-
-`<form onSubmit={handler}>`에서 submit 이벤트가 발생하면 브라우저는 기본적으로 페이지를 새로고침한다. React SPA에서는 이 기본 동작을 막아야 state 업데이트가 유지된다.
-
-리팩토링 후 `e.preventDefault()`는 폼을 소유한 AddRestaurantModal 내부에 있다. 완성된 데이터만 `onSubmit`을 통해 App으로 전달한다.
-
-```jsx
-// AddRestaurantModal.jsx
-function handleFormSubmit(e) {
-  e.preventDefault(); // 없으면 setRestaurants 실행 직후 페이지 리로드로 state 초기화
-  onSubmit({ category, name, description });
-}
-
-// App.jsx — 이벤트 객체가 아닌 데이터 객체를 받음
-function handleRestaurantSubmit({ category, name, description }) {
-  setRestaurants([...restaurants, { id: Date.now(), category, name, description }]);
-}
-```
-
-### 폼 state를 부모로 끌어올리기 (Lifting State Up)
-
-초기 구현에서는 `restaurants` state가 `App`에 있어서 폼 state도 `App`으로 끌어올려 props로 전달했다. 그러나 App이 실제로 필요한 것은 추가 완료 시점의 최종 데이터뿐이므로, 리팩토링을 통해 폼 state를 `AddRestaurantModal` 안으로 내리고 완성된 데이터만 부모로 전달하도록 변경했다. (자세한 내용은 리팩토링 섹션 참고)
-
-### 추가 후 상태 초기화
-
-음식점을 추가한 뒤 폼 입력값을 초기화하지 않으면 모달을 다시 열었을 때 이전 값이 남아있다.
-
-초기 구현에서는 폼 state가 App에 있었기 때문에 추가 완료 시점에 명시적으로 초기화했다.
-
-```jsx
-setIsAddRestaurantModalOpen(false);
-setCategory("");
-setName("");
-setDescription("");
-```
-
-리팩토링 후에는 폼 state를 AddRestaurantModal 내부로 내렸기 때문에 명시적 초기화가 불필요해졌다. `isAddRestaurantModalOpen`이 `false`가 되면 AddRestaurantModal이 언마운트되고, 다시 열릴 때 새로 마운트되면서 `useState("")`의 초기값으로 자동 초기화된다.
+`api/`와 `services/`의 차이는 뉘앙스 차이다. `api/`는 서버와의 통신 함수 모음이라는 의미가 강하고, `services/`는 비즈니스 로직까지 포함할 수 있다는 의미로 쓰이기도 한다. 팀마다 다르므로 프로젝트 컨벤션을 따르면 된다. 현재 프로젝트처럼 API 함수가 몇 개 없을 때는 `src/api.js` 하나로 충분하다.
 
 ---
 
 ## 🤔 고민했던 문제와 해결 과정에서 배운 점
 
-### 어떤 state를 어느 컴포넌트가 소유해야 하는가
+### async 함수를 정의만 하고 호출하지 않은 문제
 
-음식점 추가 기능을 구현하면서 다음 state들이 필요하다고 생각했다.
-
-- `restaurants` — 음식점 목록
-- `category`, `name`, `description` — 폼 입력값
-- `isAddRestaurantModalOpen` - 모달 열림/닫힘
-
-이 state들을 어느 컴포넌트에 선언할지 결정하기 위해 "이 state를 누가 필요로 하는가"를 기준으로 판단했다.
-
-`restaurants`는 AddRestaurantModal(추가 시 갱신)과 RestaurantList(목록 렌더링) 모두 필요하다. 두 컴포넌트는 형제 관계라 서로의 state에 직접 접근할 수 없으므로, 공통 부모인 App으로 끌어올렸다(Lifting State Up).
-
-`category`, `name`, `description`은 폼을 입력하는 동안 AddRestaurantModal 안에서만 쓰인다. 추가 완료 시점에 최종 데이터만 부모로 전달하면 되므로, 굳이 App까지 올릴 필요가 없다. AddRestaurantModal이 직접 소유한다.
-
-`isAddRestaurantModalOpen`도 같은 기준으로 판단했다. 모달을 여는 트리거는 Header의 추가 버튼이고, 실제로 열리는 것은 AddRestaurantModal이다. 두 컴포넌트는 형제 관계라 서로의 state에 접근할 수 없으므로 공통 부모인 App이 소유해야 한다.
-
-### 식당을 추가해도 목록이 업데이트되지 않는 문제
-
-`handleSubmit`에서 `setRestaurants`가 호출되는데도 목록이 바뀌지 않아서 원인을 찾아봤다. `e.preventDefault()`가 없어서 submit 시 페이지가 새로고침되고, state 업데이트가 반영되기 전에 초기 상태로 되돌아가는 것이었다. state 업데이트 자체는 올바르게 작성되어 있었지만 브라우저 기본 동작을 막지 않아서 생긴 문제였다.
-
-### setRestaurants 인자 오류
-
-처음에 `setRestaurants(...restaurants, { ... })`로 작성했다. 이렇게 하면 배열이 아닌 여러 인자를 `setRestaurants`에 넘기는 것이라 새 배열이 만들어지지 않는다. 배열 리터럴 안에서 스프레드해야 한다.
+`useEffect` 안에서 async 함수를 정의했지만 호출하지 않아 API 요청이 실행되지 않았다. 같은 실수를 두 번 했다.
 
 ```jsx
-// ❌ 인자를 여러 개 전달하는 것
-setRestaurants(...restaurants, { id: Date.now(), ... });
+// ❌ 정의만 하고 호출하지 않음 — 아무 일도 일어나지 않음
+useEffect(() => {
+  async () => {
+    const data = await getRestaurants();
+    setRestaurants(data);
+  };
+}, []);
 
-// ✅ 기존 항목을 펼쳐서 새 배열 생성
-setRestaurants([...restaurants, { id: Date.now(), ... }]);
+// ✅ 정의 후 호출
+useEffect(() => {
+  const fetchRestaurants = async () => {
+    const data = await getRestaurants();
+    setRestaurants(data);
+  };
+  fetchRestaurants();  // 호출
+}, []);
 ```
+
+### e.preventDefault()를 제거하면 안 된다는 것을 놓친 문제
+
+API 연동으로 전환하면서 "이제 서버에 제출하니까 `e.preventDefault()`가 필요 없다"고 생각했다. 그러나 `e.preventDefault()`는 서버 제출과 무관하게 **브라우저의 기본 폼 동작(페이지 새로고침)을 막는 역할**이다.
+
+`e.preventDefault()` 없이 폼을 submit하면 React의 `fetch` 호출과 무관하게 브라우저가 페이지를 새로고침한다. `e.preventDefault()`는 항상 필요하다.
 
 ---
 
 ## 🛠 리팩토링
 
-### 이벤트 핸들러 네이밍 규칙
+### state 네이밍 — 용도가 아닌 값의 성격으로
 
-`handle` + `[대상]` + `[동작]` 패턴을 사용한다. 대상은 항상 붙인다.
-
-```jsx
-handleFormSubmit       // Form + Submit
-handleCategoryChange   // Category + Change
-handleDetailModalClose // DetailModal + Close
-```
-
-props로 넘길 때는 `on-`으로 통일한다. `on-`은 인터페이스(계약), `handle-`은 구현이다.
+`filterCategory`는 이 state가 필터링에 쓰인다는 **용도**를 표현한다. state 이름은 어디에 쓰이는지가 아니라 **어떤 값을 담고 있는지**를 나타내는 게 좋다.
 
 ```jsx
-// 정의는 handle-
-function handleNameChange(e) { ... }
+// Before: 용도 표현
+const [filterCategory, setFilterCategory] = useState("전체");
 
-// props로 넘길 때는 on-
-<AddRestaurantModal onNameChange={handleNameChange} />
+// After: 값의 성격 표현
+const [selectedCategory, setSelectedCategory] = useState("전체");
 ```
 
-### 폼 state를 자식으로 내리기
+### API 함수명 — HTTP 메서드가 아닌 의도로
 
-처음 구현에서는 폼 입력값(category, name, description)을 App에서 관리했다. `restaurants` state가 App에 있어서 폼 데이터도 App까지 올려야 한다고 생각했기 때문이다. 결과적으로 AddRestaurantModal에 props가 8개가 됐다.
+`postRestaurant`는 HTTP 메서드 이름(`post`)을 그대로 쓴 것이다. 함수명은 어떻게 동작하는지가 아니라 무엇을 하려는지를 나타내야 한다.
 
-그러나 App이 실제로 필요한 것은 **추가 완료 시점의 최종 데이터**뿐이다. 폼을 채우는 중간 과정의 입력값은 App이 알 필요가 없다. 폼 state를 AddRestaurantModal 안으로 내리고, 완료 시에만 부모로 전달하도록 변경했다.
+```js
+// Before: 구현 방법 표현
+export async function postRestaurant(restaurant) { ... }
+
+// After: 의도 표현
+export async function addRestaurant(restaurant) { ... }
+```
+
+### BASE_URL 상수 추출
+
+`http://localhost:3000`이 `getRestaurants`와 `addRestaurant` 두 곳에 반복됐다. 상수로 추출해 한 곳에서 관리한다.
+
+```js
+const BASE_URL = "http://localhost:3000";
+```
+
+### 반환값 변수명 — `jsonData` → `restaurants`
+
+`response.json()`으로 파싱이 완료된 뒤에도 `jsonData`라는 이름을 쓰면 형식(JSON)을 강조하게 된다. 파싱 후에는 실제 내용을 나타내는 이름이 더 명확하다.
+
+```js
+// Before
+const jsonData = await response.json();
+
+// After
+const restaurants = await response.json();
+```
+
+### try/catch 추가
+
+`fetch`는 네트워크 오류에서만 throw하고, HTTP 4xx/5xx 응답은 throw하지 않는다. 두 가지를 모두 처리하려면 `response.ok` 확인과 `try/catch`가 함께 필요하다.
+
+```js
+export async function getRestaurants() {
+  try {
+    const response = await fetch(`${BASE_URL}/restaurants`);
+    if (!response.ok) throw new Error(`서버 오류: ${response.status}`);
+    const restaurants = await response.json();
+    return restaurants;
+  } catch (error) {
+    console.error("음식점 목록 조회 실패:", error);
+    throw error;  // 호출한 쪽이 에러를 알 수 있도록 다시 던짐
+  }
+}
+```
+
+catch에서 `throw error`를 다시 던지는 이유: 로그만 남기고 삼켜버리면 호출한 쪽(`App.jsx`)이 에러 발생 여부를 알 수 없다.
+
+### 커스텀 훅 분리 — `useRestaurants`
+
+`App`이 렌더링 구조와 UI 상태를 다루는 컴포넌트인데, 서버 통신과 데이터 관리 로직까지 함께 들어있어 역할이 섞여 있었다. `restaurants` state, `useEffect`, fetch 로직을 커스텀 훅으로 추출했다.
+
+```js
+// hooks/useRestaurants.js
+export function useRestaurants() {
+  const [restaurants, setRestaurants] = useState([]);
+
+  async function fetchRestaurants() {
+    const data = await getRestaurants();
+    setRestaurants(data);
+  }
+
+  useEffect(() => {
+    fetchRestaurants();
+  }, []);
+
+  async function addRestaurant(restaurant) {
+    await addRestaurant(restaurant);
+    await fetchRestaurants();
+  }
+
+  return { restaurants, addRestaurant };
+}
+```
+
+App에서는 서버 통신 로직이 모두 사라지고, 모달 열림/닫힘 같은 UI 상태만 남았다.
 
 ```jsx
-// Before: App이 중간 입력값까지 관리
-<AddRestaurantModal
-  category={category}
-  name={name}
-  description={description}
-  onCategoryChange={handleCategoryChange}
-  onNameChange={handleNameChange}
-  onDescriptionChange={handleDescriptionChange}
-  onSubmit={handleSubmit}
-  onClose={handleAddRestaurantModalClose}
-/>
+// Before: App이 서버 통신까지 담당
+const [restaurants, setRestaurants] = useState([]);
+useEffect(() => { /* fetch 로직 */ }, []);
+async function handleRestaurantSubmit(...) {
+  await postRestaurant(...);
+  const data = await getRestaurants();
+  setRestaurants(data);
+}
 
-// After: 완성된 데이터만 부모로 전달
-<AddRestaurantModal
-  onSubmit={handleRestaurantSubmit}   // { category, name, description } 객체를 받음
-  onClose={handleAddRestaurantModalClose}
-/>
+// After: 훅이 데이터 관리를 담당
+const { restaurants, addRestaurant } = useRestaurants();
+async function handleRestaurantSubmit(restaurant) {
+  await addRestaurant(restaurant);
+  setIsAddRestaurantModalOpen(false);
+}
 ```
-
-props가 8개 → 2개로 줄었고, 폼 내부 관심사가 AddRestaurantModal 안에 캡슐화됐다.
-
-### Modal 래퍼 div 제거
-
-`display: none` / `display: block` 패턴은 템플릿(`templates/style.css`)에서 그대로 가져온 것이다. 템플릿은 순수 HTML/CSS 기반으로, 모달이 DOM에 항상 존재하면서 `.modal--open` 클래스를 붙이고 떼는 방식으로 보이고 숨겼다.
-
-React로 전환하면서 조건부 렌더링(`{isOpen && <Modal />}`)을 사용하게 되면서 CSS 토글이 불필요해졌다. 템플릿의 구조를 그대로 쓰면서 생긴 불필요한 패턴을 뒤늦게 제거했다.
-
-래퍼 `<div>`도 함께 제거했다. backdrop과 container가 둘 다 `position: fixed`라 부모 요소의 레이아웃에 영향을 받지 않아 래퍼가 없어도 동작이 동일하다. 불필요한 DOM 노드를 줄이기 위해 Fragment로 교체했다.
