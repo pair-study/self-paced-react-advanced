@@ -1,6 +1,7 @@
 import { useState } from "react";
 import styles from "./AddRestaurantModal.module.css";
 import Modal from "../Modal/Modal";
+import { CATEGORIES } from "../../constants/categories";
 
 export default function AddRestaurantModal({ onSubmit, onClose }) {
   const [category, setCategory] = useState("");
@@ -27,12 +28,11 @@ export default function AddRestaurantModal({ onSubmit, onClose }) {
             required
           >
             <option value="">선택해 주세요</option>
-            <option value="한식">한식</option>
-            <option value="중식">중식</option>
-            <option value="일식">일식</option>
-            <option value="양식">양식</option>
-            <option value="아시안">아시안</option>
-            <option value="기타">기타</option>
+            {CATEGORIES.map((value) => (
+              <option key={value} value={value}>
+                {value}
+              </option>
+            ))}
           </select>
         </div>
 
