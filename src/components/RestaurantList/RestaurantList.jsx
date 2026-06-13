@@ -1,5 +1,5 @@
 import styles from "./RestaurantList.module.css";
-import { categoryImages } from "../../constants/categoryImages";
+import { CATEGORY_IMAGES } from "../../constants/categoryImages";
 
 export default function RestaurantList({ restaurants, onRestaurantClick }) {
   return (
@@ -20,7 +20,7 @@ export default function RestaurantList({ restaurants, onRestaurantClick }) {
           >
             <div className={styles.restaurant__category}>
               <img
-                src={categoryImages[restaurant.category]}
+                src={CATEGORY_IMAGES[restaurant.category]}
                 alt={restaurant.category}
                 className={styles["restaurant__category-icon"]}
               />

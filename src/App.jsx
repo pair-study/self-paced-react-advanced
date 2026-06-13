@@ -1,6 +1,6 @@
 import { useState } from "react";
 import "./App.css";
-import { restaurants } from "./constants/restaurants";
+import { RESTAURANTS } from "./constants/restaurants";
 import Header from "./components/Header/Header";
 import CategoryFilter from "./components/CategoryFilter/CategoryFilter";
 import RestaurantList from "./components/RestaurantList/RestaurantList";
@@ -11,7 +11,7 @@ function App() {
   const [category, setCategory] = useState("전체");
   const [clickedRestaurant, setClickedRestaurant] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [newRestaurants, setNewRestaurants] = useState(restaurants);
+  const [newRestaurants, setNewRestaurants] = useState(RESTAURANTS);
 
   const handleFormSubmit = (newRestaurant) => {
     setNewRestaurants((prev) => [...prev, newRestaurant]);

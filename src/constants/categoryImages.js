@@ -5,7 +5,7 @@ import westernImg from "../assets/category-western.png";
 import asianImg from "../assets/category-asian.png";
 import etcImg from "../assets/category-etc.png";
 
-export const categoryImages = {
+export const CATEGORY_IMAGES = {
   한식: koreanImg,
   중식: chineseImg,
   일식: japaneseImg,
