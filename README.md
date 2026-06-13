@@ -26,33 +26,22 @@ DOM에서 직접 읽는 방식(uncontrolled)의 차이를 이해하고,
 
 **1. 헤더 추가 버튼 클릭 시 음식점 추가 모달 열기**
 
-- `isAddModalOpen` boolean state를 App.jsx에 추가한다. (초기값: false)
-- `handleAddModalOpen` 핸들러를 정의하여 `Header`에 전달한다.
-- `isAddModalOpen`이 true일 때만 `AddRestaurantModal`을 렌더링한다.
+- 음식점 추가 모달 열림 여부를 boolean state로 관리한다.
+- 버튼 클릭 시 모달을 조건부 렌더링한다.
 
 **2. 음식점 추가 폼 제출 시 목록에 추가**
 
-- `restaurants` 상수를 state로 변환한다.
-- `AddRestaurantModal`에서 category, name, description을 controlled input으로 관리한다.
-- 폼 제출 시 `e.preventDefault()`로 새로고침을 막고, `onSubmit`으로 입력값을 App에 전달한다.
-- App의 `handleFormSubmit`에서 목록에 추가하고 모달을 닫는다.
-
-```jsx
-const handleFormSubmit = (newRestaurant) => {
-  setNewRestaurants([...newRestaurants, newRestaurant]);
-  setIsAddModalOpen(false);
-};
-```
+- 폼 입력값을 controlled input으로 관리한다.
+- 폼 제출 시 입력값을 상위 컴포넌트로 전달해 목록에 추가하고 모달을 닫는다.
 
 **3. 모달 닫기**
 
-- backdrop 클릭 또는 추가 완료 시 `onClose`를 통해 `setIsAddModalOpen(false)` 호출한다.
+- backdrop 클릭 또는 폼 제출 완료 시 모달을 닫는다.
 
 **[optional] 재사용 가능한 Modal 컴포넌트 구현**
 
-- `backdrop`, `container`, `title`을 공통으로 갖는 `Modal` 컴포넌트를 만든다.
-- `title`, `onClose`를 props로, 각 모달의 고유 내용은 `children`으로 받는다.
-- `AddRestaurantModal`, `RestaurantDetailModal`이 `Modal`을 내부에서 사용하도록 리팩토링한다.
+- 두 모달의 공통 구조를 `Modal` 컴포넌트로 추출한다.
+- 각 모달의 고유 내용은 `children`으로 전달한다.
 
 ---
 
