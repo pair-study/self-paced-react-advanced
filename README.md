@@ -266,3 +266,142 @@ async function handleRestaurantSubmit(restaurant) {
   setIsAddRestaurantModalOpen(false);
 }
 ```
+
+### api.js에서 try/catch 제거
+
+`api.js`에서 `try/catch`로 잡고 `throw`로 다시 던지는 건 `try/catch`를 안 쓴 것과 결과가 같다. 콘솔 로그만 남기고 에러를 그대로 위로 올리기 때문이다. 에러를 처리할 수 있는 곳(훅, 컴포넌트)에서만 잡도록 `api.js`는 단순하게 throw만 하게 변경했다.
+
+```js
+// Before: try/catch로 잡았다가 다시 throw — 의미 없는 중간 처리
+export async function getRestaurants() {
+  try {
+    const response = await fetch(`${BASE_URL}/restaurants`);
+    if (!response.ok) throw new Error(`서버 오류: ${response.status}`);
+    return await response.json();
+  } catch (error) {
+    console.error("음식점 목록 조회 실패:", error);
+    throw error;
+  }
+}
+
+// After: 단순하게 throw만
+export async function getRestaurants() {
+  const response = await fetch(`${BASE_URL}/restaurants`);
+  if (!response.ok) throw new Error(`서버 오류: ${response.status}`);
+  return response.json();
+}
+```
+
+### 에러 핸들링 추가
+
+에러는 사용자에게 보여줄 수 있는 가장 가까운 곳에서 한 번만 잡는다. 중간 함수(`addRestaurant`)에서 잡으면 에러가 거기서 소멸되어 최종 호출자가 실패 여부를 알 수 없다.
+
+- 초기 로딩 실패: `fetchRestaurants`의 `try/catch`에서 `error` state에 담아 화면에 표시
+- 음식점 추가 실패: `handleRestaurantSubmit`의 `try/catch`에서 alert로 사용자에게 알림
+
+```js
+// useRestaurants.js — 초기 로딩 에러 처리
+const fetchRestaurants = useCallback(async () => {
+  setIsLoading(true);
+  try {
+    const data = await getRestaurants();
+    setRestaurants(data);
+  } catch (error) {
+    setError("음식점 목록을 불러오지 못했습니다.");
+  } finally {
+    setIsLoading(false);
+  }
+}, []);
+
+// App.jsx — 추가 실패 에러 처리
+async function handleRestaurantSubmit(restaurant) {
+  try {
+    await addRestaurant(restaurant);
+    setIsAddRestaurantModalOpen(false);
+  } catch {
+    alert("음식점 추가에 실패했습니다. 다시 시도해주세요.");
+  }
+}
+```
+
+### 매직 스트링 상수화 — `ALL_CATEGORY`
+
+`"전체"` 문자열이 `App.jsx`, `CategoryFilter.jsx`, `filterRestaurants.js` 세 곳에 흩어져 있었다. 하나라도 수정하면 나머지도 함께 바꿔야 하는 암묵적 결합이다. 상수로 추출해 한 곳에서 관리한다.
+
+```js
+// Before: 세 곳에 흩어진 매직 스트링
+useState("전체");
+<option value="전체">전체</option>
+if (category === "전체") return restaurants;
+
+// After: 상수로 단일화
+export const ALL_CATEGORY = "전체";
+
+useState(ALL_CATEGORY);
+<option value={ALL_CATEGORY}>{ALL_CATEGORY}</option>
+if (category === ALL_CATEGORY) return restaurants;
+```
+
+### import 확장자 일관성
+
+Vite 프로젝트에서 일부 파일은 `.jsx`/`.js` 확장자를 명시하고 일부는 생략해 혼재된 상태였다. Vite는 ESM 표준에 가깝게 확장자 명시를 권장하므로 모든 로컬 import에 확장자를 추가했다.
+
+```js
+// Before
+import Modal from "../Modal/Modal";
+import { CATEGORIES } from "../../constants/categories";
+
+// After
+import Modal from "../Modal/Modal.jsx";
+import { CATEGORIES } from "../../constants/categories.js";
+```
+
+### isLoading state 추가
+
+데이터를 불러오는 동안 화면이 빈 상태로 보이는 문제를 해결하기 위해 `isLoading` state를 추가했다. `finally`를 사용해 성공/실패 여부와 관계없이 로딩 상태가 반드시 해제되도록 했다.
+
+```js
+const [isLoading, setIsLoading] = useState(false);
+
+const fetchRestaurants = useCallback(async () => {
+  setIsLoading(true);
+  try {
+    const data = await getRestaurants();
+    setRestaurants(data);
+  } catch (error) {
+    setError("음식점 목록을 불러오지 못했습니다.");
+  } finally {
+    setIsLoading(false); // 성공/실패 모두 로딩 해제
+  }
+}, []);
+
+return { restaurants, addRestaurant, isLoading, error };
+```
+
+### Modal Escape 키 처리
+
+backdrop 클릭으로만 모달을 닫을 수 있어 키보드 사용자가 닫을 수 없는 접근성 문제가 있었다. `useEffect`로 keydown 이벤트를 등록해 Escape 키로도 닫히도록 했다.
+
+cleanup 함수로 이벤트 리스너를 제거하지 않으면 모달이 닫혀도 리스너가 남아, 모달을 여러 번 열고 닫을수록 리스너가 누적되어 `onClose`가 중복 호출된다.
+
+```js
+useEffect(() => {
+  function handleKeyDown(e) {
+    if (e.key === "Escape") onClose();
+  }
+  document.addEventListener("keydown", handleKeyDown);
+  return () => document.removeEventListener("keydown", handleKeyDown);
+}, [onClose]);
+```
+
+### Header 이미지 alt 중복 제거
+
+버튼에 `aria-label="음식점 추가"`가 있는데 내부 이미지에도 `alt="음식점 추가"`가 있어 스크린 리더가 "음식점 추가 음식점 추가"를 두 번 읽는 문제가 있었다. 버튼 안의 이미지는 버튼 자체가 의미를 전달하므로 장식적 역할이다. `alt` 속성을 제거해 스크린 리더가 이미지를 건너뛰도록 했다.
+
+```jsx
+// Before
+<img src={addButton} alt="음식점 추가" />
+
+// After
+<img src={addButton} />
+```
