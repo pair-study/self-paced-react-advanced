@@ -1,191 +1,182 @@
-# Self-Paced React Step 4
+# Self-Paced React Step 5
 
 ## 🎯 개인 목표 및 목표 달성을 위한 행동 가이드
 
 이번 미션을 통해 다음과 같은 학습 경험들을 쌓는 것을 목표로 한다.
 
-**1. Controlled vs Uncontrolled Input 이해**
+**1. side effect와 useEffect 이해**
 
-폼 입력 상태를 React state로 직접 관리하는 방식(controlled)과
-DOM에서 직접 읽는 방식(uncontrolled)의 차이를 이해하고,
-각각 어느 상황에 적합한지 판단할 수 있게 된다.
+컴포넌트 렌더링 자체가 아닌, 외부 시스템과의 동기화가 side effect임을 이해하고,
+왜 useEffect 안에서 처리해야 하는지 설명할 수 있게 된다.
 
-**2. children prop 패턴 이해**
+**2. fetch를 통한 API 연동 흐름 이해**
 
-`children`을 활용하여 재사용 가능한 Modal 컴포넌트를 설계하고,
-두 종류의 모달(`AddRestaurantModal`, `RestaurantDetailModal`)에 공통 구조를 적용한다.
+GET 요청으로 목록을 불러와 state에 저장하고,
+POST 요청 후 목록을 다시 불러오는 전체 흐름을 직접 구현한다.
 
-**3. 폼 데이터 처리 및 state 업데이트 흐름 이해**
+**3. useEffect 의존성 배열 이해**
 
-폼 제출 시 입력값을 수집하여 상위 컴포넌트의 state를 업데이트하고,
-목록에 새 항목이 추가되는 전체 흐름을 직접 구현한다.
-
----
+빈 배열(`[]`)과 값이 있는 배열의 차이를 이해하고,
+effect가 언제 실행되는지 의도적으로 제어할 수 있게 된다.
 
 ## 📝 기능 구현 목록
 
-**1. 헤더 추가 버튼 클릭 시 음식점 추가 모달 열기**
+**1. API로 레스토랑 목록 불러오기**
 
-- 음식점 추가 모달 열림 여부를 boolean state로 관리한다.
-- 버튼 클릭 시 모달을 조건부 렌더링한다.
+- 앱 마운트 시 GET 요청으로 레스토랑 목록을 불러온다.
 
-**2. 음식점 추가 폼 제출 시 목록에 추가**
+**2. 레스토랑 추가 시 POST 요청**
 
-- 폼 입력값을 controlled input으로 관리한다.
-- 폼 제출 시 입력값을 상위 컴포넌트로 전달해 목록에 추가하고 모달을 닫는다.
-
-**3. 모달 닫기**
-
-- backdrop 클릭 또는 폼 제출 완료 시 모달을 닫는다.
-
-**[optional] 재사용 가능한 Modal 컴포넌트 구현**
-
-- 두 모달의 공통 구조를 `Modal` 컴포넌트로 추출한다.
-- 각 모달의 고유 내용은 `children`으로 전달한다.
-
----
+- 추가하기 버튼 클릭 시 POST 요청을 보내고, 완료 후 목록을 다시 불러온다.
 
 ## 📚 학습 내용
 
-### 1. Controlled vs Uncontrolled Input
+### 1. side effect
 
-폼 입력값을 다루는 두 가지 방식이다.
+컴포넌트 함수는 순수해야 한다. 동일한 props/state를 받으면 항상 동일한 UI를 반환해야 하고, 렌더링 중에 외부에 영향을 주어서는 안 된다. API 호출, DOM 직접 조작, 타이머 설정처럼 외부 시스템과 상호작용하는 작업을 side effect라 한다.
 
-**Controlled** — 입력값을 React state로 관리한다. `value`로 state를 바인딩하고, `onChange`로 변화를 감지해 state를 업데이트한다. React가 값의 단일 출처(source of truth)가 된다.
+컴포넌트 함수는 렌더링할 때마다 실행된다. 거기에 API 호출을 직접 넣으면 렌더링될 때마다 요청이 날아가버린다. 그래서 side effect는 렌더링 함수 본문이 아닌, `useEffect`를 통해 렌더링 이후에 실행되도록 분리해야 한다.
+
+### 2. useEffect
+
+외부 시스템과 동기화할 때 사용하는 React 훅이다. 렌더링 이후 실행되며, 두 번째 인자인 의존성 배열로 실행 시점을 제어한다.
 
 ```jsx
-const [name, setName] = useState("");
-
-<input
-  value={name}
-  onChange={(e) => setName(e.target.value)}
-/>
+useEffect(() => {
+  // side effect
+}, [의존성]);
 ```
 
-**Uncontrolled** — state 없이, 제출 시점에 DOM에서 값을 직접 읽는다. `e.target.elements` 또는 `FormData`를 활용한다.
+| 의존성 배열 | 실행 시점 |
+|---|---|
+| 없음 | 매 렌더링마다 |
+| `[]` | 마운트 시 한 번 |
+| `[value]` | 마운트 + value 변경 시 |
+
+### 3. fetch / async / await
+
+**Promise** — 비동기 작업의 결과를 나타내는 객체다. 지금은 없지만 나중에 값을 주겠다는 약속이며, `await`로 그 값이 준비될 때까지 기다릴 수 있다.
+
+**fetch** — 브라우저 내장 함수로 HTTP 요청을 보낸다. 기본값은 GET이며, 두 번째 인자로 method, headers, body를 지정할 수 있다. Promise를 반환한다.
+
+**async / await** — `await`는 Promise가 이행될 때까지 기다린 뒤 결과값을 반환하며, `async`로 선언된 함수 안에서만 사용할 수 있다. `fetch`와 `response.json()` 모두 Promise를 반환하므로 둘 다 `await`가 필요하다.
 
 ```jsx
-const handleSubmit = (e) => {
-  e.preventDefault();
-  const name = e.target.elements.name.value;
+const fetchRestaurants = async () => {
+  const response = await fetch("http://localhost:3000/restaurants");
+  const data = await response.json(); // 응답 body를 JSON으로 파싱
+  setRestaurants(data);
 };
 ```
 
-| | Controlled | Uncontrolled |
-|---|---|---|
-| 값 관리 | React state | DOM |
-| 값 접근 시점 | 언제든지 | 제출 시 |
-| 실시간 유효성 검사 | 가능 | 어려움 |
-| 코드량 | 많음 | 적음 |
+### 4. useCallback
 
-이번 미션에서는 Controlled 방식을 사용했다.
-
-### 2. 배열 state 업데이트
-
-배열 state에 항목을 추가할 때 `push`는 직접 변경이라 리렌더링이 트리거되지 않는다. 스프레드 연산자로 새 배열을 만들어야 한다.
+함수를 메모이제이션하는 React 훅이다. 컴포넌트가 리렌더링될 때마다 함수는 새로 생성되어 참조(주소)가 달라진다.
 
 ```jsx
-setNewRestaurants([...newRestaurants, newRestaurant]);
+// 리렌더링마다 새로운 함수 생성 → 참조가 달라짐
+const fetchRestaurants = async () => { ... };  // 0x001
+// 리렌더링 후
+const fetchRestaurants = async () => { ... };  // 0x002
 ```
 
-### 3. children prop
-
-컴포넌트 태그 사이에 넣은 JSX가 `children`이라는 특수 prop으로 전달된다.
+`useCallback`은 의존성 배열이 바뀌지 않으면 이전에 만든 함수를 그대로 반환해 참조를 안정적으로 유지한다.
 
 ```jsx
-<Modal title="새로운 음식점" onClose={onClose}>
-  <form>...</form>   {/* 이게 children */}
-</Modal>
-
-function Modal({ title, onClose, children }) {
-  return (
-    <div>
-      <div onClick={onClose}></div>
-      <div>
-        <h2>{title}</h2>
-        {children}  {/* <form>...</form>이 여기에 렌더링됨 */}
-      </div>
-    </div>
-  );
-}
+const fetchRestaurants = useCallback(async () => {
+  ...
+}, []);  // 의존성 없음 → 항상 같은 참조 반환
 ```
 
-공통 구조(껍데기)는 `Modal`이 담당하고, 각 모달은 고유한 내용만 children으로 전달하면 된다.
-
----
+`useEffect` 의존성 배열에 함수를 넣어야 할 때, 참조가 바뀌면 effect가 반복 실행된다. `useCallback`으로 참조를 안정화하면 의존성 배열에 안전하게 넣을 수 있다.
 
 ## 🤔 고민했던 문제와 해결 과정에서 배운 점
 
-### 1. e.preventDefault() 위치
+### 1. `fetch` 응답을 두 변수로 나눠서 받는 이유
 
-폼 submit 이벤트의 기본 동작(페이지 새로고침)을 막으려면 `e.preventDefault()`를 이벤트가 발생하는 곳에서 호출해야 한다. App의 `handleFormSubmit`이 받는 건 이벤트가 아니라 음식점 객체이기 때문에, `AddRestaurantModal` 내부의 `handleSubmit`에서 처리해야 한다.
+`response`와 `data`를 왜 굳이 두 번에 나눠서 받는지 의문이었다. `fetch`가 반환하는 건 데이터가 아니라 HTTP 응답 객체였다. 실제 데이터(JSON)는 body 안에 스트림으로 들어있어서, `.json()`으로 한 번 더 파싱해야 꺼낼 수 있다. 한 줄로 쓸 수 있지만 가독성을 위해 두 변수로 나누는 게 일반적이다.
 
-### 2. `<select>`의 controlled input 연결
+```jsx
+const response = await fetch("...");  // HTTP 응답 객체
+const data = await response.json();   // body를 JS 객체로 파싱
+```
 
-`value`와 `onChange`는 `<option>`이 아닌 `<select>`에 달아야 한다. `<option>`의 `value`는 해당 옵션이 선택됐을 때 `e.target.value`로 읽히는 값이고, `<select>`의 `value`가 현재 선택된 상태를 React state와 동기화한다.
+### 2. `fetchRestaurants`를 `useEffect` 밖으로 꺼낸 이유
+
+처음에는 `useEffect` 안에서 정의하고 바로 호출하는 패턴이 이해가 안 됐다. 정의와 호출을 분리해보니 함수 선언만으로는 실행되지 않는다는 것을 이해했다. 이후 POST 후 목록을 다시 불러와야 해서 `handleFormSubmit`에서도 같은 함수가 필요해졌는데, `useEffect` 안에 선언된 함수는 밖에서 접근할 수 없었다. 그래서 컴포넌트 레벨로 꺼내 두 곳에서 재사용했다.
+
+### 3. `useState`의 초기값으로 `fetchRestaurants`를 넘기면 안 되는 이유
+
+초기값을 빈 배열로 두지 않고 `useState(fetchRestaurants)`처럼 함수 자체를 넘기면 어떻게 될지 궁금했다. `useState`의 초기값은 첫 렌더링 때 딱 한 번만 사용된다. `fetchRestaurants`는 async 함수라 실행하면 데이터가 아닌 Promise를 반환한다. state에 Promise 객체가 들어가 배열이 아니므로 렌더링이 깨진다.
+
+### 4. useEffect 의존성 배열 — 왜 fetchRestaurants를 넣지 않았나
+
+`fetchRestaurants`는 컴포넌트 안에 선언되어 있어 리렌더링마다 새로운 참조가 만들어진다. React는 의존성을 `Object.is`로 비교하는데, 함수/객체는 내용이 같아도 참조가 다르면 변경으로 판단한다. `[fetchRestaurants]`를 넣으면 리렌더링 → 새 참조 → effect 재실행 → 리렌더링 → ... 으로 무한 반복이 생긴다. `fetchRestaurants` 안에서 쓰는 `setNewRestaurants`는 React가 안정성을 보장하므로, `[]`로 두어도 의도한 대로 동작한다.
+
+그렇다면 컴포넌트 밖이나 별도 파일로 꺼내면 되지 않을까 생각했다. 그런데 `fetchRestaurants` 안에서 `setNewRestaurants`를 사용하는데, 이는 `useState`에서 나온 값이라 컴포넌트 안에서만 존재한다. 별도 파일로 분리하려면 setter를 인자로 받는 방식을 써야 한다.
+
+```js
+// api.js
+export const fetchRestaurants = async (setRestaurants) => {
+  const response = await fetch("...");
+  const data = await response.json();
+  setRestaurants(data);
+};
+```
+
+하지만 지금 규모에서는 과한 분리다. 같은 로직을 여러 컴포넌트에서 재사용하거나, 컴포넌트에 state + effect + 핸들러가 많아져 읽기 어려워질 때 커스텀 훅(`useFetchRestaurants`)으로 분리하는 것이 React다운 방식이다.
 
 ## 🛠 리팩토링
 
-**1. 재사용 가능한 Modal 컴포넌트 추출**
+**1. fetchRestaurants에 useCallback 적용 + POST 후 await 추가**
 
-`AddRestaurantModal`과 `RestaurantDetailModal`이 backdrop, container, title 구조를 중복으로 갖고 있었다. 공통 구조를 `Modal` 컴포넌트로 분리하고, 각 모달은 `children`으로 고유 내용만 넘기도록 리팩토링했다.
-
-**2. 배열 state 업데이트를 함수형 업데이트로 변경**
-
-`[...newRestaurants, newRestaurant]`에서 `(prev) => [...prev, newRestaurant]`로 변경했다. 이전 state에 의존하는 업데이트는 함수형 업데이트가 더 안전하다.
-
-**3. id 생성을 `crypto.randomUUID()`로 변경**
-
-`Date.now()` 대신 `crypto.randomUUID()`를 사용하도록 변경했다. 밀리초 단위 충돌 가능성을 제거하고 고유성을 보장한다.
-
-**4. Modal 래퍼 `<div>` → Fragment, CSS 토글 패턴 제거**
-
-템플릿(순수 HTML/CSS)에서 `.modal--open` 클래스를 붙이고 떼는 방식으로 모달을 보이고 숨겼는데, React 조건부 렌더링으로 전환하면서 CSS 토글이 불필요해졌다. 래퍼 `<div>`도 Fragment로 교체했다. backdrop과 container가 모두 `position: fixed`라 부모 요소의 레이아웃에 영향을 받지 않기 때문에 래퍼가 없어도 동작이 동일하다.
+`fetchRestaurants`를 `useCallback`으로 감싸 참조를 안정화하고, 의존성 배열을 `[]`에서 `[fetchRestaurants]`로 수정했다. `handleFormSubmit`에서 `fetchRestaurants()` 호출 시 `await`를 추가해 POST 완료 후 GET이 실행되도록 순서를 보장했다.
 
 ## 과거 코드와 비교
 
 ### 달라진 점
 
-**1. 폼 입력값 읽기 방식 — Uncontrolled → Controlled**
+**1. useCallback 사용 여부**
 
 | 구분 | 과거 코드 | 현재 코드 |
 |------|---------|---------|
-| 방식 | Uncontrolled (`FormData`) | Controlled (`useState`) |
-| 값 접근 | 제출 시 DOM에서 읽음 | state로 실시간 관리 |
-| 코드량 | 적음 | 많음 |
+| fetchRestaurants 선언 | `useCallback`으로 감쌈 | 일반 async 함수 |
+| 의존성 배열 | `[fetchRestaurants]` | `[]` |
 
-과거 코드는 state 없이 폼 제출 시 `FormData`로 DOM에서 한 번에 읽었다. 각 input에 `name` 속성이 있으면 키-값 쌍으로 꺼낼 수 있어 코드가 간결하다.
+과거 코드는 `fetchRestaurants`를 의존성 배열에 넣기 위해 `useCallback`으로 참조를 안정화했다. 현재 코드는 `useCallback` 없이 `[]`로 뒀다.
 
-```jsx
-// 과거 — Uncontrolled
-const fd = new FormData(e.currentTarget);
-onAdd({ category: fd.get("category"), name: fd.get("name") });
+**2. id 생성 방식**
 
-// 현재 — Controlled
-const [name, setName] = useState("");
-<input value={name} onChange={(e) => setName(e.target.value)} />
-```
+과거 코드는 처음에 `` `a${Date.now()}` ``로 클라이언트에서 id를 생성해 POST 요청에 포함했다. 리뷰를 통해 클라이언트 생성 id의 문제(밀리초 충돌, 시스템 시간 불일치)를 인지하고 id를 보내지 않아 서버가 발급하도록 수정했다. 현재 코드도 같은 방식이다.
 
 ### 과거 코드에서 배운 점
 
-**1. 함수형 업데이트**
+**1. useCallback — 의존성 배열에 함수를 올바르게 넣는 방법**
 
-리뷰어 코드에서 배열 state 업데이트 시 함수형 업데이트를 사용했다.
+과거 코드는 `fetchRestaurants`를 `useCallback`으로 감싸 참조를 안정화하고 `[fetchRestaurants]`를 의존성 배열에 넣었다. 이를 반영해 현재 코드도 수정했다.
 
 ```jsx
-// 기존 코드 — newRestaurants를 직접 참조
-setNewRestaurants([...newRestaurants, newRestaurant]);
+// 수정 전
+const fetchRestaurants = async () => { ... };
+useEffect(() => { fetchRestaurants(); }, []);
 
-// 함수형 업데이트 — React가 최신 state를 prev로 전달
-setNewRestaurants((prev) => [...prev, newRestaurant]);
+// 수정 후
+const fetchRestaurants = useCallback(async () => { ... }, []);
+useEffect(() => { fetchRestaurants(); }, [fetchRestaurants]);
 ```
 
-React의 state 업데이트는 즉시 반영되지 않아 렌더링 사이클 사이에 `newRestaurants`가 오래된 값일 수 있다. `prev`는 React가 보장하는 최신 state이므로, 이전 state를 기반으로 새 state를 만들 때는 함수형 업데이트가 더 안전하다.
+리뷰어는 대안으로 `useEffect` 안에 함수 선언+실행을 모두 두는 방법도 제시했다. 이 경우 함수가 밖으로 나가지 않아 의존성 배열에 넣을 필요가 없다. 현재 코드에서는 `handleFormSubmit`에서도 `fetchRestaurants`를 재사용해야 해서 이 방법을 선택하지 않았다.
 
-`prev`는 관례적인 이름일 뿐이며, 각 setter에 묶인 해당 state의 최신값이 전달된다. state가 여러 개여도 setter가 다르므로 섞이지 않는다.
+**2. await와 race condition**
 
-**2. `crypto.randomUUID()`**
+POST 요청 후 `await` 없이 GET을 호출하면 POST가 완료되기 전에 GET이 먼저 실행돼 추가한 항목이 목록에 뜨지 않을 수 있다. `await`로 순서를 명시적으로 보장해야 한다.
 
-리뷰어 피드백: *"아주 짧은 시간 안에 여러 항목이 추가될 경우 `Date.now()`는 중복된 id가 생성될 가능성이 있습니다. `crypto.randomUUID()`를 고려해보세요."*
+```jsx
+// 수정 전 — race condition 위험
+await fetch(URL, { method: "POST", ... });
+fetchRestaurants();
 
-`Date.now()`는 밀리초 단위 숫자라 짧은 시간 안에 두 번 호출되면 같은 값이 나올 수 있다. `crypto.randomUUID()`는 브라우저 내장 함수로 `"550e8400-e29b-41d4-a716-446655440000"` 형태의 충돌 없는 고유 ID를 생성한다.
+// 수정 후 — 순서 보장
+await fetch(URL, { method: "POST", ... });
+await fetchRestaurants();
+```
