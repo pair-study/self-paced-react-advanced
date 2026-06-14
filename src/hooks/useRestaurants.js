@@ -3,10 +3,19 @@ import { getRestaurants, createRestaurant } from "../api.js";
 
 export function useRestaurants() {
   const [restaurants, setRestaurants] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const fetchRestaurants = useCallback(async () => {
-    const data = await getRestaurants();
-    setRestaurants(data);
+    setIsLoading(true);
+    try {
+      const data = await getRestaurants();
+      setRestaurants(data);
+    } catch (error) {
+      setError("음식점 목록을 불러오지 못했습니다.");
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -18,5 +27,5 @@ export function useRestaurants() {
     await fetchRestaurants();
   }
 
-  return { restaurants, addRestaurant };
+  return { restaurants, addRestaurant, isLoading, error };
 }

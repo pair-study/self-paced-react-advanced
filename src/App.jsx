@@ -7,13 +7,14 @@ import { filterRestaurants } from "./utils/filterRestaurants.js";
 import RestaurantDetailModal from "./components/RestaurantDetailModal/RestaurantDetailModal.jsx";
 import AddRestaurantModal from "./components/AddRestaurantModal/AddRestaurantModal.jsx";
 import { useRestaurants } from "./hooks/useRestaurants.js";
+import { ALL_CATEGORY } from "./constants/categories.js";
 
 function App() {
-  const [selectedCategory, setSelectedCategory] = useState("전체");
+  const [selectedCategory, setSelectedCategory] = useState(ALL_CATEGORY);
   const [clickedRestaurant, setClickedRestaurant] = useState(null);
   const [isAddRestaurantModalOpen, setIsAddRestaurantModalOpen] =
     useState(false);
-  const { restaurants, addRestaurant } = useRestaurants();
+  const { restaurants, addRestaurant, isLoading, error } = useRestaurants();
 
   const isRestaurantDetailModalOpen = !!clickedRestaurant;
   const filteredRestaurants = filterRestaurants(restaurants, selectedCategory);
@@ -39,14 +40,20 @@ function App() {
   }
 
   async function handleRestaurantSubmit(restaurant) {
-    await addRestaurant(restaurant);
-    setIsAddRestaurantModalOpen(false);
+    try {
+      await addRestaurant(restaurant);
+      setIsAddRestaurantModalOpen(false);
+    } catch {
+      alert("음식점 추가에 실패했습니다. 다시 시도해주세요.");
+    }
   }
 
   return (
     <>
       <Header onAddButtonClick={handleAddButtonClick} />
       <main>
+        {isLoading && <p>불러오는 중...</p>}
+        {error && <p>{error}</p>}
         <CategoryFilter
           category={selectedCategory}
           onCategoryChange={handleCategoryChange}
