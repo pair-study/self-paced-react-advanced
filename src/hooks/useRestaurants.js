@@ -4,13 +4,17 @@ import { getRestaurants, addRestaurant } from "../api";
 export function useRestaurants() {
   const [newRestaurants, setNewRestaurants] = useState([]);
   const [error, setError] = useState();
+  const [isLoading, setIsLoading] = useState(false);
 
   const fetchRestaurants = useCallback(async () => {
+    setIsLoading(true);
     try {
       const data = await getRestaurants();
       setNewRestaurants(data);
     } catch (e) {
       setError("음식점 목록을 불러오지 못했습니다.");
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
@@ -23,5 +27,5 @@ export function useRestaurants() {
     await fetchRestaurants();
   }
 
-  return { newRestaurants, registerRestaurant, error };
+  return { newRestaurants, registerRestaurant, error, isLoading };
 }

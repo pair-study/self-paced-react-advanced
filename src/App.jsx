@@ -13,7 +13,8 @@ function App() {
   const [clickedRestaurant, setClickedRestaurant] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-  const { newRestaurants, registerRestaurant, error } = useRestaurants();
+  const { newRestaurants, registerRestaurant, error, isLoading } =
+    useRestaurants();
 
   const handleFormSubmit = async (newRestaurant) => {
     try {
@@ -53,6 +54,7 @@ function App() {
     <>
       <Header onClick={handleAddModalOpen} />
       <main>
+        {isLoading && <p>로딩중입니다.</p>}
         {error && <p>{error}</p>}
         <CategoryFilter
           category={category}
