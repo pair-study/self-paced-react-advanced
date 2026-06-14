@@ -1,6 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
-import { RESTAURANTS } from "./constants/restaurants";
 import Header from "./components/Header/Header";
 import CategoryFilter from "./components/CategoryFilter/CategoryFilter";
 import RestaurantList from "./components/RestaurantList/RestaurantList";
@@ -11,10 +10,25 @@ function App() {
   const [category, setCategory] = useState("전체");
   const [clickedRestaurant, setClickedRestaurant] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [newRestaurants, setNewRestaurants] = useState(RESTAURANTS);
+  const [newRestaurants, setNewRestaurants] = useState([]);
 
-  const handleFormSubmit = (newRestaurant) => {
-    setNewRestaurants((prev) => [...prev, newRestaurant]);
+  const fetchRestaurants = async () => {
+    const response = await fetch("http://localhost:3000/restaurants");
+    const data = await response.json();
+    setNewRestaurants(data);
+  };
+
+  useEffect(() => {
+    fetchRestaurants(); // 마운트 시 실행
+  }, []);
+
+  const handleFormSubmit = async (newRestaurant) => {
+    await fetch("http://localhost:3000/restaurants", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newRestaurant),
+    });
+    fetchRestaurants();
     setIsAddModalOpen(false);
   };
 
