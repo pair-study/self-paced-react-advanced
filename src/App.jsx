@@ -13,11 +13,15 @@ function App() {
   const [clickedRestaurant, setClickedRestaurant] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-  const { newRestaurants, registerRestaurant } = useRestaurants();
+  const { newRestaurants, registerRestaurant, error } = useRestaurants();
 
   const handleFormSubmit = async (newRestaurant) => {
-    await registerRestaurant(newRestaurant);
-    setIsAddModalOpen(false);
+    try {
+      await registerRestaurant(newRestaurant);
+      setIsAddModalOpen(false);
+    } catch {
+      alert("음식점 추가에 실패했습니다. 다시 시도해주세요.");
+    }
   };
 
   const filteredRestaurants =
@@ -49,6 +53,7 @@ function App() {
     <>
       <Header onClick={handleAddModalOpen} />
       <main>
+        {error && <p>{error}</p>}
         <CategoryFilter
           category={category}
           onChangeCategory={handleSelectChange}
