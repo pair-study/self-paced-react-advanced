@@ -11,7 +11,7 @@ export default function Header({ onAddButtonClick }) {
         aria-label="음식점 추가"
         onClick={onAddButtonClick}
       >
-        <img src={addButton} alt="음식점 추가" />
+        <img src={addButton} />
       </button>
     </header>
   );
