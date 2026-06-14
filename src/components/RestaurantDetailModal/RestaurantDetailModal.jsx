@@ -1,5 +1,5 @@
 import styles from "./RestaurantDetailModal.module.css";
-import Modal from "../Modal/Modal";
+import Modal from "../Modal/Modal.jsx";
 
 export default function RestaurantDetailModal({ restaurant, onClose }) {
   return (

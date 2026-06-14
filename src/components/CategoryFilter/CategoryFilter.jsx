@@ -1,4 +1,4 @@
-import { CATEGORIES } from "../../constants/categories";
+import { ALL_CATEGORY, CATEGORIES } from "../../constants/categories.js";
 import styles from "./CategoryFilter.module.css";
 
 export default function CategoryFilter({ category, onCategoryChange }) {
@@ -12,7 +12,7 @@ export default function CategoryFilter({ category, onCategoryChange }) {
         value={category}
         onChange={onCategoryChange}
       >
-        <option value="전체">전체</option>
+        <option value={ALL_CATEGORY}>{ALL_CATEGORY}</option>
         {CATEGORIES.map((value) => (
           <option key={value} value={value}>
             {value}
