@@ -31,7 +31,7 @@ function App() {
     setClickedRestaurant(restaurant);
   };
 
-  const handleModalClose = () => {
+  const handleDetailModalClose = () => {
     setClickedRestaurant(null);
   };
 
@@ -60,7 +60,7 @@ function App() {
         {clickedRestaurant && (
           <RestaurantDetailModal
             clickedRestaurant={clickedRestaurant}
-            onClose={handleModalClose}
+            onClose={handleDetailModalClose}
           />
         )}
         {isAddModalOpen && (
