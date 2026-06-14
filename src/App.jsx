@@ -1,3 +1,4 @@
+import { ALL_CATEGORY } from "./constants/categories";
 import { useCallback, useEffect, useState } from "react";
 import "./App.css";
 import Header from "./components/Header/Header";
@@ -6,20 +7,22 @@ import RestaurantList from "./components/RestaurantList/RestaurantList";
 import RestaurantDetailModal from "./components/Modal/RestaurantDetailModal";
 import AddRestaurantModal from "./components/Modal/AddRestaurantModal";
 
+const BASE_URL = "http://localhost:3000";
+
 function App() {
-  const [category, setCategory] = useState("전체");
+  const [category, setCategory] = useState(ALL_CATEGORY);
   const [clickedRestaurant, setClickedRestaurant] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newRestaurants, setNewRestaurants] = useState([]);
 
   const fetchRestaurants = useCallback(async () => {
-    const response = await fetch("http://localhost:3000/restaurants");
+    const response = await fetch(`${BASE_URL}/restaurants`);
     const data = await response.json();
     setNewRestaurants(data);
   }, []);
 
   useEffect(() => {
-    fetchRestaurants();
+    void fetchRestaurants();
   }, [fetchRestaurants]);
 
   const handleFormSubmit = async (newRestaurant) => {
@@ -33,7 +36,7 @@ function App() {
   };
 
   const filteredRestaurants =
-    category === "전체"
+    category === ALL_CATEGORY
       ? newRestaurants
       : newRestaurants.filter((restaurant) => restaurant.category === category);
 
