@@ -28,7 +28,7 @@ function App() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(newRestaurant),
     });
-    fetchRestaurants();
+    await fetchRestaurants();
     setIsAddModalOpen(false);
   };
 
