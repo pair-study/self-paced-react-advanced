@@ -90,6 +90,65 @@ const fetchRestaurants = useCallback(async () => {
 
 `useEffect` 의존성 배열에 함수를 넣어야 할 때, 참조가 바뀌면 effect가 반복 실행된다. `useCallback`으로 참조를 안정화하면 의존성 배열에 안전하게 넣을 수 있다.
 
+### 5. 커스텀 훅
+
+React hooks(`useState`, `useEffect` 등)를 사용하는 일반 함수다. 이름은 `use`로 시작해야 한다. 컴포넌트에서 데이터/로직을 분리할 때 사용한다.
+
+```js
+export function useRestaurants() {
+  const [restaurants, setRestaurants] = useState([]);
+  // ...state, effect, 함수 정의
+
+  return { restaurants, registerRestaurant, error, isLoading };
+}
+
+// App에서
+const { restaurants, registerRestaurant } = useRestaurants();
+```
+
+훅은 "어떻게 데이터를 다루는가"를 담당하고, 컴포넌트는 "어떻게 UI를 보여주는가"만 담당하도록 분리된다.
+
+### 6. api.js 분리
+
+HTTP 요청은 React와 무관한 로직이다. `api.js`로 분리하면 컴포넌트/훅은 "어떻게 요청을 보내는지"를 몰라도 된다.
+
+```js
+// api.js — HTTP만 담당
+export async function getRestaurants() {
+  const response = await fetch(`${BASE_URL}/restaurants`);
+  if (!response.ok) throw new Error("Failed to fetch");
+  return response.json();
+}
+```
+
+`response.ok`가 `false`(4xx, 5xx)여도 `fetch`는 에러를 던지지 않는다. 수동으로 체크해서 throw해야 한다.
+
+### 7. 에러 처리 레이어
+
+에러 처리는 어디서 할지를 역할에 따라 나눈다.
+
+| 레이어 | 역할 | 처리 방식 |
+|---|---|---|
+| api.js | HTTP 에러 감지 | `throw` |
+| useRestaurants | GET 에러 — 데이터 상태 | `setError(메시지)` |
+| App | POST 에러 — UI 반응 | `alert()` |
+
+### 8. finally
+
+`try/catch/finally`에서 `finally`는 성공/실패 상관없이 항상 실행된다. 로딩 상태 해제처럼 결과와 무관하게 반드시 실행해야 하는 코드에 쓴다.
+
+```js
+setIsLoading(true);
+try {
+  const data = await getRestaurants();
+  setNewRestaurants(data);
+} catch (e) {
+  setError("불러오지 못했습니다.");
+} finally {
+  setIsLoading(false);  // 성공/실패 상관없이 실행
+}
+```
+
 ## 🤔 고민했던 문제와 해결 과정에서 배운 점
 
 ### 1. `fetch` 응답을 두 변수로 나눠서 받는 이유
@@ -126,11 +185,93 @@ export const fetchRestaurants = async (setRestaurants) => {
 
 하지만 지금 규모에서는 과한 분리다. 같은 로직을 여러 컴포넌트에서 재사용하거나, 컴포넌트에 state + effect + 핸들러가 많아져 읽기 어려워질 때 커스텀 훅(`useFetchRestaurants`)으로 분리하는 것이 React다운 방식이다.
 
+### 5. api.js + 커스텀 훅 분리 과정에서의 실수
+
+**파라미터 누락 + 잘못된 인자**
+
+`handleFormSubmit`을 `async () =>`로 선언해 폼 데이터를 받지 않았다. 그 상태에서 `addRestaurant(fetchRestaurants)`처럼 함수 참조를 인자로 넘겼다. 폼 데이터는 핸들러 파라미터로 받아야 한다.
+
+```js
+// 틀린 예
+const handleFormSubmit = async () => {
+  await addRestaurant(fetchRestaurants);  // 함수를 넘겨버림
+
+// 맞는 예
+const handleFormSubmit = async (newRestaurant) => {
+  await registerRestaurant(newRestaurant);
+```
+
+**훅 return에서 데이터 누락**
+
+`useRestaurants`에서 `fetchRestaurants`만 return하고 `newRestaurants`를 빠뜨렸다. `fetchRestaurants`는 데이터를 불러오는 함수고, 불러온 데이터는 `newRestaurants` state에 저장된다. 컴포넌트가 렌더링에 쓸 데이터 자체를 반환해야 한다.
+
+**훅 함수와 api.js 함수의 이름 충돌**
+
+훅에 `addRestaurant`를 추가하려 했는데 `api.js`에서 같은 이름을 import하고 있어 충돌이 생겼다. 임시로 `addRestaurants`(복수형)을 썼으나 하나를 추가하는 함수에 복수형은 의미가 맞지 않았다. 역할을 드러내는 다른 이름(`registerRestaurant`)으로 정리했다.
+
+### 6. 에러 처리에서의 실수
+
+**useCallback 의존성 배열에 error state를 넣은 것**
+
+`catch` 블록에서 `setError`를 쓰니 `error`가 의존성이라 생각해 `useCallback`의 의존성 배열에 `[error]`를 넣었다. 에러 발생 → `error` state 변경 → `fetchRestaurants` 재생성 → `useEffect` 재실행 → 또 에러 → 무한루프가 된다. `fetchRestaurants`는 `error`를 읽지 않고 `setError`만 호출하므로 의존성 배열은 `[]`가 맞다.
+
+**catch에서 state 변수를 그대로 setError에 넣은 것**
+
+```js
+const [error, setError] = useState();
+
+catch {
+  setError(error);  // error는 발생한 에러가 아니라 state 변수
+}
+```
+
+`catch` 블록에서 발생한 에러를 받으려면 `catch (e)`로 변수를 선언해야 한다. 변수명을 state와 같은 `error`로 쓰면 헷갈리므로 `e`처럼 다른 이름을 쓰거나, 에러 객체가 필요 없으면 그냥 `catch`로 쓴다.
+
 ## 🛠 리팩토링
 
 **1. fetchRestaurants에 useCallback 적용 + POST 후 await 추가**
 
 `fetchRestaurants`를 `useCallback`으로 감싸 참조를 안정화하고, 의존성 배열을 `[]`에서 `[fetchRestaurants]`로 수정했다. `handleFormSubmit`에서 `fetchRestaurants()` 호출 시 `await`를 추가해 POST 완료 후 GET이 실행되도록 순서를 보장했다.
+
+**2. 매직 스트링 상수화**
+
+`"전체"`라는 문자열이 여러 곳에 흩어져 있었다. 오타가 생겨도 찾기 어렵고, 변경 시 모든 곳을 바꿔야 한다. `ALL_CATEGORY` 상수로 추출해 한 곳에서 관리하도록 했다.
+
+**3. aria-label + alt 중복 제거**
+
+스크린 리더는 `aria-label`과 `alt`를 모두 읽는다. 버튼에 `aria-label="음식점 추가"`가 있을 때 내부 이미지에 같은 내용의 `alt`를 두면 "음식점 추가 음식점 추가"로 두 번 읽힌다. `alt`를 제거해 중복을 없앴다.
+
+**4. void 키워드**
+
+`useEffect`는 cleanup 함수 또는 `undefined`를 반환해야 한다. async 함수는 항상 Promise를 반환하므로 `useEffect` 콜백에서 async 함수를 직접 호출하면 Promise가 반환되어 경고가 발생한다. `void`를 붙이면 반환값을 `undefined`로 만들어 이를 방지한다.
+
+```js
+useEffect(() => {
+  void fetchRestaurants();  // Promise를 버리고 undefined 반환
+}, [fetchRestaurants]);
+```
+
+**5. BASE_URL 추출 + api.js 분리**
+
+URL을 컴포넌트 안에 직접 쓰면 여러 곳에 흩어지고 변경 시 모두 찾아야 한다. `BASE_URL` 상수로 추출하고, HTTP 요청 로직 전체를 `api.js`로 분리했다.
+
+**6. useRestaurants 커스텀 훅 분리**
+
+레스토랑 데이터 관련 state + 함수를 `useRestaurants`로 분리했다. App은 어떻게 데이터를 불러오는지 몰라도 되고, 결과만 받아 UI를 그린다.
+
+```js
+// 분리 전 — App에 데이터 로직이 섞임
+const [newRestaurants, setNewRestaurants] = useState([]);
+const fetchRestaurants = useCallback(async () => { ... }, []);
+useEffect(() => { void fetchRestaurants(); }, [fetchRestaurants]);
+
+// 분리 후 — 한 줄로
+const { newRestaurants, registerRestaurant, error, isLoading } = useRestaurants();
+```
+
+**7. 에러 처리 + 로딩 상태 추가**
+
+GET 에러는 훅에서 `error` state로, POST 에러는 App에서 `alert`으로 처리하도록 레이어를 나눴다. `finally`로 성공/실패 상관없이 로딩 상태가 해제되도록 했다.
 
 ## 과거 코드와 비교
 
