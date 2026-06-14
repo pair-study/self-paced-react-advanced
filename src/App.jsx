@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import "./App.css";
 import Header from "./components/Header/Header";
 import CategoryFilter from "./components/CategoryFilter/CategoryFilter";
@@ -12,15 +12,15 @@ function App() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newRestaurants, setNewRestaurants] = useState([]);
 
-  const fetchRestaurants = async () => {
+  const fetchRestaurants = useCallback(async () => {
     const response = await fetch("http://localhost:3000/restaurants");
     const data = await response.json();
     setNewRestaurants(data);
-  };
+  }, []);
 
   useEffect(() => {
-    fetchRestaurants(); // 마운트 시 실행
-  }, []);
+    fetchRestaurants();
+  }, [fetchRestaurants]);
 
   const handleFormSubmit = async (newRestaurant) => {
     await fetch("http://localhost:3000/restaurants", {
