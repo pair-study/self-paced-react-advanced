@@ -197,23 +197,50 @@ catch에서 `throw error`를 다시 던지는 이유: 로그만 남기고 삼켜
 
 `App`이 렌더링 구조와 UI 상태를 다루는 컴포넌트인데, 서버 통신과 데이터 관리 로직까지 함께 들어있어 역할이 섞여 있었다. `restaurants` state, `useEffect`, fetch 로직을 커스텀 훅으로 추출했다.
 
+### `fetchRestaurants`를 `useCallback`으로 추출
+
+`fetchRestaurants`가 `useEffect` 내부에 정의되어 있어 `addRestaurant`에서 같은 로직을 중복으로 작성해야 했다. 함수를 훅 스코프로 꺼내 재사용하려면 `useCallback`이 필요하다.
+
+`useCallback` 없이 일반 함수로 선언하면 렌더링마다 새 함수 참조가 생성되어 `useEffect([fetchRestaurants])`가 매 렌더링마다 실행되는 무한 루프가 발생한다. `useCallback`의 빈 의존성 배열 `[]`이 참조를 고정해 이를 방지한다.
+
 ```js
-// hooks/useRestaurants.js
+// Before: fetchRestaurants가 useEffect 안에 갇혀 있어 addRestaurant에서 로직을 중복 작성
 export function useRestaurants() {
   const [restaurants, setRestaurants] = useState([]);
 
-  async function fetchRestaurants() {
-    const data = await getRestaurants();
-    setRestaurants(data);
-  }
-
   useEffect(() => {
+    const fetchRestaurants = async () => {
+      const data = await getRestaurants();
+      setRestaurants(data);
+    };
     fetchRestaurants();
   }, []);
 
   async function addRestaurant(restaurant) {
-    await addRestaurant(restaurant);
-    await fetchRestaurants();
+    await createRestaurant(restaurant);
+    const data = await getRestaurants(); // 중복
+    setRestaurants(data);               // 중복
+  }
+
+  return { restaurants, addRestaurant };
+}
+
+// After: useCallback으로 추출해 재사용, 의존성 배열도 명시적으로 선언
+export function useRestaurants() {
+  const [restaurants, setRestaurants] = useState([]);
+
+  const fetchRestaurants = useCallback(async () => {
+    const data = await getRestaurants();
+    setRestaurants(data);
+  }, []);
+
+  useEffect(() => {
+    void fetchRestaurants();
+  }, [fetchRestaurants]);
+
+  async function addRestaurant(restaurant) {
+    await createRestaurant(restaurant);
+    await fetchRestaurants(); // 재사용
   }
 
   return { restaurants, addRestaurant };
