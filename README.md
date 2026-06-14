@@ -138,6 +138,10 @@ function Modal({ title, onClose, children }) {
 
 `Date.now()` 대신 `crypto.randomUUID()`를 사용하도록 변경했다. 밀리초 단위 충돌 가능성을 제거하고 고유성을 보장한다.
 
+**4. Modal 래퍼 `<div>` → Fragment, CSS 토글 패턴 제거**
+
+템플릿(순수 HTML/CSS)에서 `.modal--open` 클래스를 붙이고 떼는 방식으로 모달을 보이고 숨겼는데, React 조건부 렌더링으로 전환하면서 CSS 토글이 불필요해졌다. 래퍼 `<div>`도 Fragment로 교체했다. backdrop과 container가 모두 `position: fixed`라 부모 요소의 레이아웃에 영향을 받지 않기 때문에 래퍼가 없어도 동작이 동일하다.
+
 ## 과거 코드와 비교
 
 ### 달라진 점
