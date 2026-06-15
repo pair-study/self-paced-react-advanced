@@ -37,21 +37,65 @@ effect가 언제 실행되는지 의도적으로 제어할 수 있게 된다.
 
 컴포넌트 함수는 렌더링할 때마다 실행된다. 거기에 API 호출을 직접 넣으면 렌더링될 때마다 요청이 날아가버린다. 그래서 side effect는 렌더링 함수 본문이 아닌, `useEffect`를 통해 렌더링 이후에 실행되도록 분리해야 한다.
 
-### 2. useEffect
+### 2. useEffect와 useCallback
 
-외부 시스템과 동기화할 때 사용하는 React 훅이다. 렌더링 이후 실행되며, 두 번째 인자인 의존성 배열로 실행 시점을 제어한다.
+두 훅 모두 의존성 배열을 사용하지만 역할이 다르다.
 
-```jsx
-useEffect(() => {
-  // side effect
-}, [의존성]);
-```
+| 훅 | 역할 | 실행 시점 |
+|---|---|---|
+| `useEffect` | side effect 실행 | 의존성이 바뀔 때마다 안의 코드 실행 |
+| `useCallback` | 함수 참조 유지 | 의존성이 바뀔 때만 함수를 새로 만들고, 그 외엔 이전 참조 반환 |
+
+**useEffect**
+
+외부 시스템과 동기화할 때 사용한다. 렌더링 이후 실행되며, 의존성 배열로 실행 시점을 제어한다.
 
 | 의존성 배열 | 실행 시점 |
 |---|---|
 | 없음 | 매 렌더링마다 |
 | `[]` | 마운트 시 한 번 |
 | `[value]` | 마운트 + value 변경 시 |
+
+**왜 같이 쓰는가**
+
+컴포넌트가 리렌더링될 때마다 함수는 새로 만들어져 참조(주소)가 달라진다. `useEffect` 의존성 배열에 함수를 넣으면, 리렌더링마다 참조가 바뀌어 effect가 반복 실행되는 무한루프가 생긴다.
+
+```js
+// 리렌더링마다 새 참조 → 무한루프
+const fetchRestaurants = async () => { ... };  // 매번 0x001, 0x002...
+useEffect(() => { fetchRestaurants(); }, [fetchRestaurants]);
+```
+
+`useCallback`으로 감싸면 의존성이 바뀌지 않는 한 같은 참조를 반환해 루프가 끊긴다.
+
+```js
+const fetchRestaurants = useCallback(async () => {
+  const data = await getRestaurants();
+  setNewRestaurants(data);
+}, []);  // 의존성 없음 → 항상 같은 참조
+
+useEffect(() => {
+  void fetchRestaurants();
+}, [fetchRestaurants]);  // 참조가 안 바뀌니 최초 1번만 실행
+```
+
+**useCallback 의존성 배열**
+
+"이 함수가 읽는 값"을 넣는다. 함수 안에서 바뀔 수 있는 값을 참조하면 그 값이 의존성이 된다.
+
+```js
+// [] — 외부 값을 읽지 않으므로 항상 같은 참조
+const fetchRestaurants = useCallback(async () => {
+  const data = await getRestaurants();
+  setNewRestaurants(data);
+}, []);
+
+// [category] — category가 바뀌면 함수를 새로 만들어야 함
+const fetchByCategory = useCallback(async () => {
+  const data = await getRestaurants(category);
+  setNewRestaurants(data);
+}, [category]);
+```
 
 ### 3. fetch / async / await
 
@@ -69,28 +113,7 @@ const fetchRestaurants = async () => {
 };
 ```
 
-### 4. useCallback
-
-함수를 메모이제이션하는 React 훅이다. 컴포넌트가 리렌더링될 때마다 함수는 새로 생성되어 참조(주소)가 달라진다.
-
-```jsx
-// 리렌더링마다 새로운 함수 생성 → 참조가 달라짐
-const fetchRestaurants = async () => { ... };  // 0x001
-// 리렌더링 후
-const fetchRestaurants = async () => { ... };  // 0x002
-```
-
-`useCallback`은 의존성 배열이 바뀌지 않으면 이전에 만든 함수를 그대로 반환해 참조를 안정적으로 유지한다.
-
-```jsx
-const fetchRestaurants = useCallback(async () => {
-  ...
-}, []);  // 의존성 없음 → 항상 같은 참조 반환
-```
-
-`useEffect` 의존성 배열에 함수를 넣어야 할 때, 참조가 바뀌면 effect가 반복 실행된다. `useCallback`으로 참조를 안정화하면 의존성 배열에 안전하게 넣을 수 있다.
-
-### 5. 커스텀 훅
+### 4. 커스텀 훅
 
 React hooks(`useState`, `useEffect` 등)를 사용하는 일반 함수다. 이름은 `use`로 시작해야 한다. 컴포넌트에서 데이터/로직을 분리할 때 사용한다.
 
@@ -108,7 +131,7 @@ const { restaurants, registerRestaurant } = useRestaurants();
 
 훅은 "어떻게 데이터를 다루는가"를 담당하고, 컴포넌트는 "어떻게 UI를 보여주는가"만 담당하도록 분리된다.
 
-### 6. api.js 분리
+### 5. api.js 분리
 
 HTTP 요청은 React와 무관한 로직이다. `api.js`로 분리하면 컴포넌트/훅은 "어떻게 요청을 보내는지"를 몰라도 된다.
 
@@ -123,7 +146,7 @@ export async function getRestaurants() {
 
 `response.ok`가 `false`(4xx, 5xx)여도 `fetch`는 에러를 던지지 않는다. 수동으로 체크해서 throw해야 한다.
 
-### 7. 에러 처리 레이어
+### 6. 에러 처리 레이어
 
 에러 처리는 어디서 할지를 역할에 따라 나눈다.
 
@@ -133,7 +156,7 @@ export async function getRestaurants() {
 | useRestaurants | GET 에러 — 데이터 상태 | `setError(메시지)` |
 | App | POST 에러 — UI 반응 | `alert()` |
 
-### 8. finally
+### 7. finally
 
 `try/catch/finally`에서 `finally`는 성공/실패 상관없이 항상 실행된다. 로딩 상태 해제처럼 결과와 무관하게 반드시 실행해야 하는 코드에 쓴다.
 
