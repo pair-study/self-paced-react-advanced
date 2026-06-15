@@ -1,11 +1,11 @@
 import "./App.css";
-import Header from "./components/Header/Header.jsx";
-import CategoryFilter from "./components/CategoryFilter/CategoryFilter.jsx";
-import RestaurantList from "./components/RestaurantList/RestaurantList.jsx";
+import Header from "./components/Header.jsx";
+import CategoryFilter from "./components/CategoryFilter.jsx";
+import RestaurantList from "./components/RestaurantList.jsx";
 import { useState } from "react";
 import { filterRestaurants } from "./utils/filterRestaurants.js";
-import RestaurantDetailModal from "./components/RestaurantDetailModal/RestaurantDetailModal.jsx";
-import AddRestaurantModal from "./components/AddRestaurantModal/AddRestaurantModal.jsx";
+import RestaurantDetailModal from "./components/RestaurantDetailModal.jsx";
+import AddRestaurantModal from "./components/AddRestaurantModal.jsx";
 import { useRestaurants } from "./hooks/useRestaurants.js";
 import { ALL_CATEGORY } from "./constants/categories.js";
 
