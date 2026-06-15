@@ -1,30 +1,77 @@
-# 🛣️Let's Go Further Together...
+## 구현 결과
 
-###### **이 Repository는 cho-log : self-paced-react step5까지 마치고 난 후 더 나아가 고도화하기 위해 존재합니다.**
+| | 강예령 | 남유성 |
+|---|---|---|
+| Step1 | [cactus-step1](https://github.com/pair-study/self-paced-react-advanced/tree/cactus-step1) , [PR #3](https://github.com/pair-study/self-paced-react-advanced/pull/3) | [hippo-step1](https://github.com/pair-study/self-paced-react-advanced/tree/hippo-step1) , [PR #1](https://github.com/pair-study/self-paced-react-advanced/pull/1) |
+| Step2-1 | [cactus-step2](https://github.com/pair-study/self-paced-react-advanced/tree/cactus-step2) , [PR #4](https://github.com/pair-study/self-paced-react-advanced/pull/4)  | [hippo-step2](https://github.com/pair-study/self-paced-react-advanced/tree/hippo-step2) , [PR #2](https://github.com/pair-study/self-paced-react-advanced/pull/2) |
+| Step2-2 | [cactus-step3](https://github.com/pair-study/self-paced-react-advanced/tree/cactus-step3) , [PR #8](https://github.com/pair-study/self-paced-react-advanced/pull/8)  | [hippo-step3](https://github.com/pair-study/self-paced-react-advanced/tree/hippo-step3) , [PR #5](https://github.com/pair-study/self-paced-react-advanced/pull/5)  |
+| Step2-3 | [cactus-step4](https://github.com/pair-study/self-paced-react-advanced/tree/cactus-step4) , [PR #9](https://github.com/pair-study/self-paced-react-advanced/pull/9) | [hippo-step4](https://github.com/pair-study/self-paced-react-advanced/tree/hippo-step4) , [PR #6](https://github.com/pair-study/self-paced-react-advanced/pull/6) |
 
-###### **미션 README 문서는 Let's go further디렉토리에 존재합니다.**
+---
 
-> 🍀Cho-log-study : self-paced-react, React 기초
->
-> https://github.com/cho-log/self-paced-react
+## Step1
+- styled-component 적용
 
-# Why❓
+### 미션 개요
+- 핵심 키워드: `styled-component`
 
-아래의 새로운 기술을 쓸 때는
+### 스터디 세션 기록
+> 날짜: 2026.06.15 ~ 2026.06.16
 
-1.  왜 이 기술을 쓰는지? <br/>
-2.  기존의 것과 어떤 장단점이 있는지? <br/>
-3.  썼을때 어떤 일이 일어났는지? <br/>
-    등의 **"왜?"** 라는 질문에 답할 수 있어야합니다.<br/>
+### 공통으로 어려웠던 점
 
-고도화 작업을 할때 항상 **"왜?"** 라는 질문에 답하며 **Deep Dive**합시다.
+**1.**
 
-# 📈Something To Learn More About
 
-### 1. styled-component 적용
+### 서로 다르게 접근한 부분
 
-### 2. 전역상태관리 툴 다루기
+#### 1. 
 
-1. #### Context API
-2. #### Zustand
-3. #### Tanstack Query
+**내용**
+
+
+### 인상 깊었던 코드
+
+
+---
+
+## Step2-1
+- 
+- 
+
+### 미션 개요
+- 핵심 키워드: 
+
+### 스터디 세션 기록
+> 날짜: 
+
+### 공통으로 어려웠던 점
+
+
+### 서로 다르게 접근한 부분
+
+
+### 인상 깊었던 코드
+
+**강예령**
+
+
+**남유성**
+
+
+  ---
+
+## Step2-2
+- 
+- 
+
+### 미션 개요
+- 핵심 키워드:
+
+### 스터디 세션 기록
+> 날짜: 
+
+### 공통으로 어려웠던 점
+
+### 서로 다르게 접근한 부분
+
