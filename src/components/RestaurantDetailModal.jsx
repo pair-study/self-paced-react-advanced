@@ -1,14 +1,5 @@
 import styled from "styled-components";
 import Modal from "./Modal.jsx";
-const RestaurantInfo = styled.div`
-  margin-bottom: 24px;
-`;
-
-const Description = styled.p`
-  font-size: 16px;
-  line-height: 24px;
-  font-weight: 400;
-`;
 
 const ButtonContainer = styled.div`
   display: flex;
@@ -20,12 +11,22 @@ const Button = styled.button`
   margin-right: 16px;
   border: none;
   border-radius: 8px;
+  font-size: 14px;
+  line-height: 20px;
   font-weight: 600;
   cursor: pointer;
   background: var(--primary-color);
   color: var(--grey-100);
-  font-size: 14px;
-  line-height: 20px;
+`;
+
+const RestaurantInfo = styled.div`
+  margin-bottom: 24px;
+`;
+
+const Description = styled.p`
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
 `;
 
 export default function RestaurantDetailModal({ restaurant, onClose }) {
