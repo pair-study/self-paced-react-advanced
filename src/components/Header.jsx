@@ -11,7 +11,7 @@ const Gnb = styled.header`
 `;
 
 const GnbTitle = styled.h1`
-  color: #fcfcfd;
+  color: var(--grey-50);
   font-size: 20px;
   line-height: 24px;
   font-weight: 600;
