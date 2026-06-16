@@ -31,12 +31,24 @@
 
 ### 3. CSS-in-JS vs 별도 CSS 파일 trade-off
 
-| | CSS 파일 분리 | styled-components |
-|---|---|---|
-| 파일 구조 | `.css` 파일 별도 존재 | 컴포넌트 파일 하나로 관리 |
-| 스코프 | 전역 (충돌 위험) | 컴포넌트 단위 격리 |
-| 동적 스타일 | `className` 조건부 처리 | props로 직접 제어 |
-| JS 번들 | CSS 별도 | CSS가 JS 번들에 포함 |
+styled-components를 사용하는 이유는 컴포넌트와 스타일을 한 파일에서 관리할 수 있고, 고유 클래스명을 자동 생성해 전역 충돌을 방지하며, props로 동적 스타일을 직접 제어할 수 있기 때문이다.
+
+| | CSS 파일 분리 | CSS Module | styled-components |
+|---|---|---|---|
+| 파일 구조 | `.css` 파일 별도 존재 | `.module.css` 파일 별도 존재 | 컴포넌트 파일 하나로 관리 |
+| 스코프 | 전역 (충돌 위험) | 빌드 타임 고유 클래스명 생성 | 런타임 고유 클래스명 생성 |
+| 동적 스타일 | 상태에 따라 className 문자열 조합 | 상태에 따라 className 문자열 조합 | props로 직접 제어 |
+| JS 번들 | CSS 별도 | CSS 별도 | CSS가 JS 번들에 포함 |
+
+런타임 상태(`useState`)에 따라 스타일이 달라지는 경우 두 방식의 차이가 명확하게 드러난다.
+
+```jsx
+// CSS Module - 클래스명 문자열을 직접 조합
+<div className={`${styles['form-item']} ${isRequired ? styles['form-item--required'] : ''}`}>
+
+// styled-components - props만 넘기면 됨
+<FormItem $required={isRequired}>
+```
 
 ### 4. transient props (`$` prefix)
 - styled-components에 전달한 props는 기본적으로 DOM 속성으로도 전달된다.
