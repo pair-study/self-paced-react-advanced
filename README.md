@@ -2,10 +2,10 @@
 
 | | 강예령 | 남유성 |
 |---|---|---|
-| Step1 | [cactus-step1](https://github.com/pair-study/self-paced-react-advanced/tree/cactus-step1) , [PR #3](https://github.com/pair-study/self-paced-react-advanced/pull/3) | [hippo-step1](https://github.com/pair-study/self-paced-react-advanced/tree/hippo-step1) , [PR #1](https://github.com/pair-study/self-paced-react-advanced/pull/1) |
-| Step2-1 | [cactus-step2](https://github.com/pair-study/self-paced-react-advanced/tree/cactus-step2) , [PR #4](https://github.com/pair-study/self-paced-react-advanced/pull/4)  | [hippo-step2](https://github.com/pair-study/self-paced-react-advanced/tree/hippo-step2) , [PR #2](https://github.com/pair-study/self-paced-react-advanced/pull/2) |
-| Step2-2 | [cactus-step3](https://github.com/pair-study/self-paced-react-advanced/tree/cactus-step3) , [PR #8](https://github.com/pair-study/self-paced-react-advanced/pull/8)  | [hippo-step3](https://github.com/pair-study/self-paced-react-advanced/tree/hippo-step3) , [PR #5](https://github.com/pair-study/self-paced-react-advanced/pull/5)  |
-| Step2-3 | [cactus-step4](https://github.com/pair-study/self-paced-react-advanced/tree/cactus-step4) , [PR #9](https://github.com/pair-study/self-paced-react-advanced/pull/9) | [hippo-step4](https://github.com/pair-study/self-paced-react-advanced/tree/hippo-step4) , [PR #6](https://github.com/pair-study/self-paced-react-advanced/pull/6) |
+| Step1 | [cactus-adv-1](https://github.com/pair-study/self-paced-react-advanced/tree/cactus-adv-1) , [PR #2](https://github.com/pair-study/self-paced-react-advanced/pull/2) | [hippo-adv-1](https://github.com/pair-study/self-paced-react-advanced/tree/hippo-adv-1) , [PR #1](https://github.com/pair-study/self-paced-react-advanced/pull/1) |
+| Step2-1 |  |  |
+| Step2-2 |  |  |
+| Step2-3 |  |  |
 
 ---
 
@@ -28,9 +28,6 @@
 #### 1. 
 
 **내용**
-
-
-### 인상 깊었던 코드
 
 
 ---
