@@ -12,7 +12,7 @@ const FilterContainer = styled.section`
 const FilterSelect = styled.select`
   height: 44px;
   min-width: 125px;
-  border: 1px solid #d0d5dd;
+  border: 1px solid var(--grey-200);
   border-radius: 8px;
   background: transparent;
   ${textBody}

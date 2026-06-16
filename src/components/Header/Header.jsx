@@ -13,7 +13,7 @@ const Gnb = styled.header`
 
 const GnbTitle = styled.h1`
   ${textTitle}
-  color: #fcfcfd;
+  color: var(--grey-50);
 `;
 
 const GnbButton = styled.button`

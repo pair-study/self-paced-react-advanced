@@ -14,7 +14,7 @@ const RestaurantUl = styled.ul``;
 
 const Restaurant = styled.li`
   padding: 16px 8px;
-  border-bottom: 1px solid #e9eaed;
+  border-bottom: 1px solid var(--grey-150);
 `;
 
 const RestaurantButton = styled.button`
