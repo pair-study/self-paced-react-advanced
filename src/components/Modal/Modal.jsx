@@ -1,6 +1,6 @@
 import { useEffect, useId } from "react";
 import styled from "styled-components";
-import { textTitle, textCaption } from "../../styles/typography";
+import { textTitle } from "../../styles/typography";
 
 const ModalBackdrop = styled.div`
   position: fixed;
@@ -23,32 +23,6 @@ const ModalContainer = styled.div`
 const ModalTitle = styled.h2`
   margin-bottom: 36px;
   ${textTitle}
-`;
-
-export const ModalButtonContainer = styled.div`
-  display: flex;
-`;
-
-export const Button = styled.button`
-  width: 100%;
-  height: 44px;
-  margin-right: 16px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-
-  ${(props) =>
-    props.$primary &&
-    `
-    background: var(--primary-color);
-    color: var(--grey-100);
-  `}
-
-  &:last-child {
-    margin-right: 0;
-  }
-
-  ${textCaption}
 `;
 
 export default function Modal({ title, onClose, children }) {

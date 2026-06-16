@@ -1,6 +1,6 @@
 import { CATEGORIES } from "../../constants/categories";
 import { useState } from "react";
-import Modal, { Button, ModalButtonContainer } from "./Modal";
+import Modal from "./Modal";
 import styled from "styled-components";
 import { textCaption } from "../../styles/typography";
 
@@ -15,7 +15,8 @@ const FormItem = styled.div`
   }
 
   input,
-  select {
+  select,
+  textarea {
     padding: 8px;
     margin: 6px 0;
     border: 1px solid var(--grey-200);
@@ -24,19 +25,11 @@ const FormItem = styled.div`
   }
 
   textarea {
-    padding: 8px;
-    margin: 6px 0;
-    border: 1px solid var(--grey-200);
-    border-radius: 8px;
-    font-size: 16px;
     resize: none;
   }
 
   select {
     height: 44px;
-    padding: 8px;
-    border: 1px solid var(--grey-200);
-    border-radius: 8px;
     color: var(--grey-300);
   }
 
@@ -56,7 +49,29 @@ const FormHelpText = styled.span`
   ${textCaption}
 `;
 
-const TextCaption = styled.label`
+const ModalButtonContainer = styled.div`
+  display: flex;
+`;
+
+const Button = styled.button`
+  width: 100%;
+  height: 44px;
+  margin-right: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+
+  ${(props) =>
+    props.$primary &&
+    `
+    background: var(--primary-color);
+    color: var(--grey-100);
+  `}
+
+  &:last-child {
+    margin-right: 0;
+  }
+
   ${textCaption}
 `;
 
@@ -75,7 +90,7 @@ export default function AddRestaurantModal({ onSubmit, onClose }) {
       <form onSubmit={handleSubmit}>
         {/* 카테고리 */}
         <FormItem $required>
-          <TextCaption htmlFor="category">카테고리</TextCaption>
+          <label htmlFor="category">카테고리</label>
           <select
             name="category"
             id="category"
@@ -95,7 +110,7 @@ export default function AddRestaurantModal({ onSubmit, onClose }) {
         </FormItem>
         {/* 음식점 이름 */}
         <FormItem $required>
-          <TextCaption htmlFor="name">이름</TextCaption>
+          <label htmlFor="name">이름</label>
           <input
             type="text"
             name="name"
@@ -109,7 +124,7 @@ export default function AddRestaurantModal({ onSubmit, onClose }) {
         </FormItem>
         {/* 설명 */}
         <FormItem>
-          <TextCaption htmlFor="description">설명</TextCaption>
+          <label htmlFor="description">설명</label>
           <textarea
             name="description"
             id="description"
