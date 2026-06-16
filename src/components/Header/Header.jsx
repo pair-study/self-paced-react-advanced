@@ -37,7 +37,7 @@ export default function Header({ onClick }) {
     <Gnb>
       <GnbTitle>점심 뭐 먹지</GnbTitle>
       <GnbButton type="button" aria-label="음식점 추가" onClick={onClick}>
-        <GnbButtonImg src={addButtonImg} />
+        <GnbButtonImg src={addButtonImg} alt="" />
       </GnbButton>
     </Gnb>
   );
