@@ -1,6 +1,6 @@
 import { CATEGORIES } from "../../constants/categories";
 import { useState } from "react";
-import Modal from "./Modal";
+import Modal, { Button, ModalButtonContainer } from "./Modal";
 import styled from "styled-components";
 import { textCaption } from "../../styles/typography";
 
@@ -57,32 +57,6 @@ const FormHelpText = styled.span`
 `;
 
 const TextCaption = styled.label`
-  ${textCaption}
-`;
-
-const ModalButtonContainer = styled.div`
-  display: flex;
-`;
-
-const Button = styled.button`
-  width: 100%;
-  height: 44px;
-  margin-right: 16px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-
-  ${(props) =>
-    props.$primary &&
-    `
-    background: var(--primary-color);
-    color: var(--grey-100);
-  `}
-
-  &:last-child {
-    margin-right: 0;
-  }
-
   ${textCaption}
 `;
 
