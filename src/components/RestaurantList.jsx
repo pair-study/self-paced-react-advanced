@@ -1,15 +1,13 @@
 import { CATEGORY_IMAGES } from "../constants/categoryImages.js";
 import styled from "styled-components";
 
-const List = styled.section`
-  display: flex;
-  flex-direction: column;
+const List = styled.ul`
   padding: 0 16px;
   margin: 16px 0;
 `;
 
 const Restaurant = styled.li`
-  border-bottom: 1px solid #e9eaed;
+  border-bottom: 1px solid var(--grey-150);
 `;
 
 const Button = styled.button`
@@ -45,50 +43,48 @@ const Info = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+`;
 
-  h3 {
-    margin: 0;
-    font-size: 18px;
-    line-height: 28px;
-    font-weight: 600;
-  }
+const RestaurantName = styled.h3`
+  margin: 0;
+  font-size: 18px;
+  line-height: 28px;
+  font-weight: 600;
+`;
 
-  p {
-    display: -webkit-box;
-    padding-top: 8px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    font-size: 16px;
-    line-height: 24px;
-    font-weight: 400;
-  }
+const RestaurantDescription = styled.p`
+  display: -webkit-box;
+  padding-top: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
 `;
 
 export default function RestaurantList({ restaurants, onRestaurantClick }) {
   return (
     <List>
-      <ul>
-        {restaurants.map((restaurant) => {
-          return (
-            <Restaurant key={restaurant.id}>
-              <Button onClick={() => onRestaurantClick(restaurant)}>
-                <Category>
-                  <img
-                    src={CATEGORY_IMAGES[restaurant.category]}
-                    alt={restaurant.category}
-                  />
-                </Category>
-                <Info>
-                  <h3>{restaurant.name}</h3>
-                  <p>{restaurant.description}</p>
-                </Info>
-              </Button>
-            </Restaurant>
-          );
-        })}
-      </ul>
+      {restaurants.map((restaurant) => {
+        return (
+          <Restaurant key={restaurant.id}>
+            <Button onClick={() => onRestaurantClick(restaurant)}>
+              <Category>
+                <img
+                  src={CATEGORY_IMAGES[restaurant.category]}
+                  alt={restaurant.category}
+                />
+              </Category>
+              <Info>
+                <RestaurantName>{restaurant.name}</RestaurantName>
+                <RestaurantDescription>{restaurant.description}</RestaurantDescription>
+              </Info>
+            </Button>
+          </Restaurant>
+        );
+      })}
     </List>
   );
 }
