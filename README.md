@@ -113,11 +113,33 @@ const HelpText = styled.span`
 
 typography는 특정 태그가 아니라 여러 요소에 공통으로 적용되는 스타일이므로 `css` 헬퍼가 적합하다.
 
-### 2. `Button`, `ModalButtonContainer` 중복 제거
+### 2. `Button`, `ModalButtonContainer` 위치 재조정
 
-`AddRestaurantModal`과 `RestaurantDetailModal`에 동일한 `Button`, `ModalButtonContainer`가 각각 정의되어 있었다. `Modal.jsx`에서 한 번만 정의하고 `export`해서 두 컴포넌트에서 import해 사용하도록 개선했다.
+`AddRestaurantModal`과 `RestaurantDetailModal`에 동일한 `Button`, `ModalButtonContainer`가 각각 정의되어 있었다. 처음에는 `Modal.jsx`에서 한 번만 정의하고 `export`해서 두 컴포넌트에서 import해 사용하는 방식을 택했다.
 
 1번과 다르게 `css` 헬퍼 방식이 아닌 styled component 자체를 export한 이유는, `Button`은 JSX에서 `<Button $primary>추가하기</Button>`처럼 사용되어야 하기 때문이다. `css` 헬퍼는 CSS 조각일 뿐이라 JSX에서 컴포넌트처럼 쓸 수 없다. `css` 헬퍼로 추출했다면 각 파일에서 여전히 `const Button = styled.button`${buttonStyles}``처럼 컴포넌트를 따로 만들어야 해서 중복이 그대로 남는다. styled component 자체를 export하면 props 처리(`$primary`), 의사 클래스(`&:last-child`) 등 컴포넌트 전체가 재사용된다.
+
+다만 코드 리뷰에서 `Modal.jsx`는 백드롭, 컨테이너, 타이틀, ESC 키 처리처럼 모달 껍데기에 대한 책임만 가져야 하는데, 자신이 렌더링하지 않는 `Button` 스타일까지 `export`하고 있어 파일의 역할이 불명확하다는 피드백을 받았다. 리뷰어의 제안대로 각 모달이 자신의 `Button`, `ModalButtonContainer`를 직접 정의하는 방향으로 되돌렸다. 두 모달에 걸쳐 약 20줄의 중복이 생기지만, `Modal.jsx`는 모달 껍데기 책임만 유지하고 각 파일이 자신에게 필요한 것만 갖는 구조가 더 명확하다고 판단했다. 버튼 변형이 늘어나거나 모달 외 다른 곳에서도 쓰이게 되면 그때 `src/components/common/Button.jsx`로 분리하는 게 자연스러운 확장 방향이라고 생각한다.
+
+### 3. Modal의 접근성 책임 보강
+
+코드 리뷰에서 모달에 `role`, `aria-modal`, `aria-labelledby`, Escape 키 닫기가 빠져있다는 피드백을 받았다. 백드롭 클릭으로만 닫히는 구조라 키보드 사용자나 스크린리더 사용자는 모달을 닫을 방법이 없었다.
+
+`role="dialog"`, `aria-modal="true"`로 스크린리더에 모달임을 알리고, `aria-labelledby`로 제목과 연결했다. `useEffect`로 `window`에 keydown 리스너를 등록해 Escape 키로 닫히도록 했다. `useEffect`가 "외부 시스템과 동기화"하는 용도라는 걸 다시 체감했는데, 이번엔 외부 시스템이 API가 아니라 브라우저의 키보드 이벤트였다는 점이 새로웠다.
+
+### 4. 하드코딩된 색상값을 디자인 토큰으로
+
+`Header`의 `color: #fcfcfd`, `RestaurantList`의 `border-bottom: 1px solid #e9eaed`처럼 `App.css`의 `:root`에 없는 색상이 컴포넌트에 하드코딩되어 있다는 리뷰를 받았다. `App.css`의 `:root`에 `--grey-50`, `--grey-150`을 추가하고 `var()`로 참조하도록 수정했다.
+
+색상 값이 여러 컴포넌트에 흩어져 있으면 디자인이 바뀔 때 일일이 찾아 고쳐야 하는데, 변수로 한 곳에서 관리하면(Single Source of Truth) 그 한 곳만 바꾸면 전체에 반영된다는 점을 이해했다.
+
+### 5. 같은 스타일을 두 군데서 선언한 중복
+
+`FormItem`의 `label { }` 선택자가 이미 모든 자식 label에 `${textCaption}`을 적용하고 있는데, `TextCaption`이라는 별도 styled component를 만들어 같은 스타일을 또 선언하고 있었다. `TextCaption`은 항상 `FormItem` 안에서만 쓰였기 때문에 불필요한 중복이었고, 제거하고 일반 `<label>` 태그로 교체했다.
+
+`select`와 `textarea`도 비슷한 문제가 있었다. `input, select`로 공통 스타일을 묶어놓고 `select`, `textarea`에 각각 같은 속성을 다시 선언하고 있었다. `input, select, textarea`로 공통 속성을 한 번에 묶고, 각 태그에는 고유한 속성만 남기도록 정리했다.
+
+이 과정에서 여러 선택자가 같은 요소에 같은 스타일을 중복 적용하고 있는지 확인하는 습관이 필요하다는 것을 배웠다.
 
 ## 과거 코드와 비교
 
