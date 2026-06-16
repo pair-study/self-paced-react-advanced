@@ -1,3 +1,4 @@
+import { useEffect, useId } from "react";
 import styled from "styled-components";
 import { textTitle, textCaption } from "../../styles/typography";
 
@@ -51,11 +52,21 @@ export const Button = styled.button`
 `;
 
 export default function Modal({ title, onClose, children }) {
+  const titleId = useId();
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
   return (
     <>
-      <ModalBackdrop onClick={onClose}></ModalBackdrop>
-      <ModalContainer>
-        <ModalTitle>{title}</ModalTitle>
+      <ModalBackdrop onClick={onClose} />
+      <ModalContainer role="dialog" aria-modal="true" aria-labelledby={titleId}>
+        <ModalTitle id={titleId}>{title}</ModalTitle>
         {children}
       </ModalContainer>
     </>
