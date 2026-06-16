@@ -1,346 +1,180 @@
-# Self-Paced React Step 5
+# styled-components를 적용해서 리팩토링하기
 
 ## 🎯 개인 목표 및 목표 달성을 위한 행동 가이드
 
 이번 미션을 통해 다음과 같은 학습 경험들을 쌓는 것을 목표로 한다.
 
-**1. side effect와 useEffect 이해**
-
-컴포넌트 렌더링 자체가 아닌, 외부 시스템과의 동기화가 side effect임을 이해하고,
-왜 useEffect 안에서 처리해야 하는지 설명할 수 있게 된다.
-
-**2. fetch를 통한 API 연동 흐름 이해**
-
-GET 요청으로 목록을 불러와 state에 저장하고,
-POST 요청 후 목록을 다시 불러오는 전체 흐름을 직접 구현한다.
-
-**3. useEffect 의존성 배열 이해**
-
-빈 배열(`[]`)과 값이 있는 배열의 차이를 이해하고,
-effect가 언제 실행되는지 의도적으로 제어할 수 있게 된다.
+- styled-components의 기본 문법과 사용법을 익히고, CSS-in-JS 방식이 기존 별도 CSS 파일 방식과 어떤 차이가 있는지 직접 체감한다.
+- 단순히 동작하는 코드를 넘어, 컴포넌트마다 스코프가 격리된 스타일을 작성하는 습관을 형성한다.
+- styled-components를 처음 접하더라도 공식 문서를 스스로 찾아 읽고 적용하는 자기주도 학습 역량을 키운다.
+- CSS 파일 방식 vs CSS-in-JS 방식의 trade-off를 정리해 PR에 나만의 언어로 서술한다.
 
 ## 📝 기능 구현 목록
 
-**1. API로 레스토랑 목록 불러오기**
-
-- 앱 마운트 시 GET 요청으로 레스토랑 목록을 불러온다.
-
-**2. 레스토랑 추가 시 POST 요청**
-
-- 추가하기 버튼 클릭 시 POST 요청을 보내고, 완료 후 목록을 다시 불러온다.
+- `styled-components` 패키지 설치
+- 모든 컴포넌트의 CSS Module 파일을 제거하고 styled-components로 전환
+  - `Header`, `CategoryFilter`, `RestaurantList`
+  - `Modal`, `AddRestaurantModal`, `RestaurantDetailModal`
+- `props`를 활용한 조건부 스타일링 적용 (`$required`, `$primary`)
+- `App.css`에서 Typography 유틸리티 클래스 제거 (각 컴포넌트 스타일로 이동)
 
 ## 📚 학습 내용
 
-### 1. side effect
+### 1. styled-components 기본 문법
 
-컴포넌트 함수는 순수해야 한다. 동일한 props/state를 받으면 항상 동일한 UI를 반환해야 하고, 렌더링 중에 외부에 영향을 주어서는 안 된다. API 호출, DOM 직접 조작, 타이머 설정처럼 외부 시스템과 상호작용하는 작업을 side effect라 한다.
+- `styled.태그명` 뒤에 백틱으로 CSS를 작성하면 해당 태그에 스타일이 적용된 React 컴포넌트가 만들어진다.
+- 백틱 안에서 자식 요소 선택자(`label { }`, `input { }`)를 중첩해서 쓸 수 있다. styled-components가 런타임에 고유 클래스명(예: `.sc-abc123`)을 생성하고, 중첩 선택자를 `.sc-abc123 input { }` 형태로 변환하기 때문이다.
+- `&`는 생성된 클래스명 자신을 가리키는 선택자로, `&:hover`, `&:last-child` 같은 의사 클래스에 사용한다.
 
-컴포넌트 함수는 렌더링할 때마다 실행된다. 거기에 API 호출을 직접 넣으면 렌더링될 때마다 요청이 날아가버린다. 그래서 side effect는 렌더링 함수 본문이 아닌, `useEffect`를 통해 렌더링 이후에 실행되도록 분리해야 한다.
+### 2. Scoped Styling 원리
 
-### 2. useEffect와 useCallback
+- 런타임에 컴포넌트마다 고유 클래스명을 생성해 `<style>` 태그에 주입한다. 이 방식으로 스타일이 컴포넌트 단위로 격리된다.
+- CSS Module도 빌드 타임에 고유 클래스명을 생성해 같은 목적을 달성하지만, styled-components는 스타일을 JS 파일 안에서 함께 관리한다는 차이가 있다.
 
-두 훅 모두 의존성 배열을 사용하지만 역할이 다르다.
+### 3. CSS-in-JS vs 별도 CSS 파일 trade-off
 
-| 훅 | 역할 | 실행 시점 |
-|---|---|---|
-| `useEffect` | side effect 실행 | 의존성이 바뀔 때마다 안의 코드 실행 |
-| `useCallback` | 함수 참조 유지 | 의존성이 바뀔 때만 함수를 새로 만들고, 그 외엔 이전 참조 반환 |
+styled-components를 사용하는 이유는 컴포넌트와 스타일을 한 파일에서 관리할 수 있고, 고유 클래스명을 자동 생성해 전역 충돌을 방지하며, props로 동적 스타일을 직접 제어할 수 있기 때문이다.
 
-**useEffect**
+|             | CSS 파일 분리                     | CSS Module                        | styled-components         |
+| ----------- | --------------------------------- | --------------------------------- | ------------------------- |
+| 파일 구조   | `.css` 파일 별도 존재             | `.module.css` 파일 별도 존재      | 컴포넌트 파일 하나로 관리 |
+| 스코프      | 전역 (충돌 위험)                  | 빌드 타임 고유 클래스명 생성      | 런타임 고유 클래스명 생성 |
+| 동적 스타일 | 상태에 따라 className 문자열 조합 | 상태에 따라 className 문자열 조합 | props로 직접 제어         |
+| JS 번들     | CSS 별도                          | CSS 별도                          | CSS가 JS 번들에 포함      |
 
-외부 시스템과 동기화할 때 사용한다. 렌더링 이후 실행되며, 의존성 배열로 실행 시점을 제어한다.
-
-| 의존성 배열 | 실행 시점 |
-|---|---|
-| 없음 | 매 렌더링마다 |
-| `[]` | 마운트 시 한 번 |
-| `[value]` | 마운트 + value 변경 시 |
-
-**왜 같이 쓰는가**
-
-컴포넌트가 리렌더링될 때마다 함수는 새로 만들어져 참조(주소)가 달라진다. `useEffect` 의존성 배열에 함수를 넣으면, 리렌더링마다 참조가 바뀌어 effect가 반복 실행되는 무한루프가 생긴다.
-
-```js
-// 리렌더링마다 새 참조 → 무한루프
-const fetchRestaurants = async () => { ... };  // 매번 0x001, 0x002...
-useEffect(() => { fetchRestaurants(); }, [fetchRestaurants]);
-```
-
-`useCallback`으로 감싸면 의존성이 바뀌지 않는 한 같은 참조를 반환해 루프가 끊긴다.
-
-```js
-const fetchRestaurants = useCallback(async () => {
-  const data = await getRestaurants();
-  setNewRestaurants(data);
-}, []);  // 의존성 없음 → 항상 같은 참조
-
-useEffect(() => {
-  void fetchRestaurants();
-}, [fetchRestaurants]);  // 참조가 안 바뀌니 최초 1번만 실행
-```
-
-**useCallback 의존성 배열**
-
-"이 함수가 읽는 값"을 넣는다. 함수 안에서 바뀔 수 있는 값을 참조하면 그 값이 의존성이 된다.
-
-```js
-// [] — 외부 값을 읽지 않으므로 항상 같은 참조
-const fetchRestaurants = useCallback(async () => {
-  const data = await getRestaurants();
-  setNewRestaurants(data);
-}, []);
-
-// [category] — category가 바뀌면 함수를 새로 만들어야 함
-const fetchByCategory = useCallback(async () => {
-  const data = await getRestaurants(category);
-  setNewRestaurants(data);
-}, [category]);
-```
-
-### 3. fetch / async / await
-
-**Promise** — 비동기 작업의 결과를 나타내는 객체다. 지금은 없지만 나중에 값을 주겠다는 약속이며, `await`로 그 값이 준비될 때까지 기다릴 수 있다.
-
-**fetch** — 브라우저 내장 함수로 HTTP 요청을 보낸다. 기본값은 GET이며, 두 번째 인자로 method, headers, body를 지정할 수 있다. Promise를 반환한다.
-
-**async / await** — `await`는 Promise가 이행될 때까지 기다린 뒤 결과값을 반환하며, `async`로 선언된 함수 안에서만 사용할 수 있다. `fetch`와 `response.json()` 모두 Promise를 반환하므로 둘 다 `await`가 필요하다.
+런타임 상태(`useState`)에 따라 스타일이 달라지는 경우 두 방식의 차이가 명확하게 드러난다.
 
 ```jsx
-const fetchRestaurants = async () => {
-  const response = await fetch("http://localhost:3000/restaurants");
-  const data = await response.json(); // 응답 body를 JSON으로 파싱
-  setRestaurants(data);
-};
+// CSS Module - 클래스명 문자열을 직접 조합
+<div className={`${styles['form-item']} ${isRequired ? styles['form-item--required'] : ''}`}>
+
+// styled-components - props만 넘기면 됨
+<FormItem $required={isRequired}>
 ```
 
-### 4. 커스텀 훅
+### 4. transient props (`$` prefix)
 
-React hooks(`useState`, `useEffect` 등)를 사용하는 일반 함수다. 이름은 `use`로 시작해야 한다. 컴포넌트에서 데이터/로직을 분리할 때 사용한다.
+- styled-components에 전달한 props는 기본적으로 DOM 속성으로도 전달된다.
+- `$`를 붙이면 스타일 계산에만 사용되고 DOM에는 전달되지 않아 불필요한 HTML 경고를 막을 수 있다.
 
-```js
-export function useRestaurants() {
-  const [restaurants, setRestaurants] = useState([]);
-  // ...state, effect, 함수 정의
+### 5. 장식용 이미지의 `alt` 처리
 
-  return { restaurants, registerRestaurant, error, isLoading };
-}
-
-// App에서
-const { restaurants, registerRestaurant } = useRestaurants();
-```
-
-훅은 "어떻게 데이터를 다루는가"를 담당하고, 컴포넌트는 "어떻게 UI를 보여주는가"만 담당하도록 분리된다.
-
-### 5. api.js 분리
-
-HTTP 요청은 React와 무관한 로직이다. `api.js`로 분리하면 컴포넌트/훅은 "어떻게 요청을 보내는지"를 몰라도 된다.
-
-```js
-// api.js — HTTP만 담당
-export async function getRestaurants() {
-  const response = await fetch(`${BASE_URL}/restaurants`);
-  if (!response.ok) throw new Error("Failed to fetch");
-  return response.json();
-}
-```
-
-`response.ok`가 `false`(4xx, 5xx)여도 `fetch`는 에러를 던지지 않는다. 수동으로 체크해서 throw해야 한다.
-
-### 6. 에러 처리 레이어
-
-에러 처리는 어디서 할지를 역할에 따라 나눈다.
-
-| 레이어 | 역할 | 처리 방식 |
-|---|---|---|
-| api.js | HTTP 에러 감지 | `throw` |
-| useRestaurants | GET 에러 — 데이터 상태 | `setError(메시지)` |
-| App | POST 에러 — UI 반응 | `alert()` |
-
-### 7. finally
-
-`try/catch/finally`에서 `finally`는 성공/실패 상관없이 항상 실행된다. 로딩 상태 해제처럼 결과와 무관하게 반드시 실행해야 하는 코드에 쓴다.
-
-```js
-setIsLoading(true);
-try {
-  const data = await getRestaurants();
-  setNewRestaurants(data);
-} catch (e) {
-  setError("불러오지 못했습니다.");
-} finally {
-  setIsLoading(false);  // 성공/실패 상관없이 실행
-}
-```
+- 버튼 안에 아이콘 이미지가 있고 버튼 자체에 `aria-label`이 있다면, 버튼의 접근 가능한 이름은 `aria-label`로 이미 충족된다.
+- 이때 내부 `<img>`에 `alt`가 없으면 일부 스크린리더가 fallback으로 이미지 파일 경로를 읽어 `aria-label`과 중복되는 정보를 노출할 수 있다.
+- `alt=""`를 명시하면 "의미 없는 장식용 이미지"임을 알려 스크린리더가 해당 이미지를 건너뛰게 할 수 있다.
 
 ## 🤔 고민했던 문제와 해결 과정에서 배운 점
 
-### 1. `fetch` 응답을 두 변수로 나눠서 받는 이유
+### 1. `FormItem.input` 문법 오류
 
-`response`와 `data`를 왜 굳이 두 번에 나눠서 받는지 의문이었다. `fetch`가 반환하는 건 데이터가 아니라 HTTP 응답 객체였다. 실제 데이터(JSON)는 body 안에 스트림으로 들어있어서, `.json()`으로 한 번 더 파싱해야 꺼낼 수 있다. 한 줄로 쓸 수 있지만 가독성을 위해 두 변수로 나누는 게 일반적이다.
+styled-components에서 부모 컴포넌트 내부의 `input`에 스타일을 주려고 `FormItem.input`처럼 프로퍼티로 접근했는데, 이런 문법은 존재하지 않아 에러가 났다.
 
-```jsx
-const response = await fetch("...");  // HTTP 응답 객체
-const data = await response.json();   // body를 JS 객체로 파싱
-```
+부모 컴포넌트 백틱 안에 `input { ... }`처럼 자식 선택자를 중첩하면 `.sc-abc123 input { }`으로 변환되어 해당 컴포넌트 내부의 input에만 스타일이 적용된다. JSX에서는 그냥 `<input>`을 쓰면 된다.
 
-### 2. `fetchRestaurants`를 `useEffect` 밖으로 꺼낸 이유
+### 2. BEM Modifier를 props로 대체하기
 
-처음에는 `useEffect` 안에서 정의하고 바로 호출하는 패턴이 이해가 안 됐다. 정의와 호출을 분리해보니 함수 선언만으로는 실행되지 않는다는 것을 이해했다. 이후 POST 후 목록을 다시 불러와야 해서 `handleFormSubmit`에서도 같은 함수가 필요해졌는데, `useEffect` 안에 선언된 함수는 밖에서 접근할 수 없었다. 그래서 컴포넌트 레벨로 꺼내 두 곳에서 재사용했다.
+BEM에서 Modifier(M)는 Block의 상태나 변형을 나타낸다. `.form-item--required`는 `.form-item` Block의 "필수 입력" 상태를 표현하는 Modifier다.
 
-### 3. `useState`의 초기값으로 `fetchRestaurants`를 넘기면 안 되는 이유
+styled-components에서는 이 Modifier의 역할을 `props`가 대신한다. `$required` prop이 전달되면 `label::after`로 별표를 추가하는 스타일이 적용되는 방식으로, `.block--modifier` 클래스 추가와 동일한 효과를 낸다.
 
-초기값을 빈 배열로 두지 않고 `useState(fetchRestaurants)`처럼 함수 자체를 넘기면 어떻게 될지 궁금했다. `useState`의 초기값은 첫 렌더링 때 딱 한 번만 사용된다. `fetchRestaurants`는 async 함수라 실행하면 데이터가 아닌 Promise를 반환한다. state에 Promise 객체가 들어가 배열이 아니므로 렌더링이 깨진다.
+### 3. styled component와 함수 이름 충돌
 
-### 4. useEffect 의존성 배열 — 왜 fetchRestaurants를 넣지 않았나
-
-`fetchRestaurants`는 컴포넌트 안에 선언되어 있어 리렌더링마다 새로운 참조가 만들어진다. React는 의존성을 `Object.is`로 비교하는데, 함수/객체는 내용이 같아도 참조가 다르면 변경으로 판단한다. `[fetchRestaurants]`를 넣으면 리렌더링 → 새 참조 → effect 재실행 → 리렌더링 → ... 으로 무한 반복이 생긴다. `fetchRestaurants` 안에서 쓰는 `setNewRestaurants`는 React가 안정성을 보장하므로, `[]`로 두어도 의도한 대로 동작한다.
-
-그렇다면 컴포넌트 밖이나 별도 파일로 꺼내면 되지 않을까 생각했다. 그런데 `fetchRestaurants` 안에서 `setNewRestaurants`를 사용하는데, 이는 `useState`에서 나온 값이라 컴포넌트 안에서만 존재한다. 별도 파일로 분리하려면 setter를 인자로 받는 방식을 써야 한다.
-
-```js
-// api.js
-export const fetchRestaurants = async (setRestaurants) => {
-  const response = await fetch("...");
-  const data = await response.json();
-  setRestaurants(data);
-};
-```
-
-하지만 지금 규모에서는 과한 분리다. 같은 로직을 여러 컴포넌트에서 재사용하거나, 컴포넌트에 state + effect + 핸들러가 많아져 읽기 어려워질 때 커스텀 훅(`useFetchRestaurants`)으로 분리하는 것이 React다운 방식이다.
-
-### 5. api.js + 커스텀 훅 분리 과정에서의 실수
-
-**파라미터 누락 + 잘못된 인자**
-
-`handleFormSubmit`을 `async () =>`로 선언해 폼 데이터를 받지 않았다. 그 상태에서 `addRestaurant(fetchRestaurants)`처럼 함수 참조를 인자로 넘겼다. 폼 데이터는 핸들러 파라미터로 받아야 한다.
-
-```js
-// 틀린 예
-const handleFormSubmit = async () => {
-  await addRestaurant(fetchRestaurants);  // 함수를 넘겨버림
-
-// 맞는 예
-const handleFormSubmit = async (newRestaurant) => {
-  await registerRestaurant(newRestaurant);
-```
-
-**훅 return에서 데이터 누락**
-
-`useRestaurants`에서 `fetchRestaurants`만 return하고 `newRestaurants`를 빠뜨렸다. `fetchRestaurants`는 데이터를 불러오는 함수고, 불러온 데이터는 `newRestaurants` state에 저장된다. 컴포넌트가 렌더링에 쓸 데이터 자체를 반환해야 한다.
-
-**훅 함수와 api.js 함수의 이름 충돌**
-
-훅에 `addRestaurant`를 추가하려 했는데 `api.js`에서 같은 이름을 import하고 있어 충돌이 생겼다. 임시로 `addRestaurants`(복수형)을 썼으나 하나를 추가하는 함수에 복수형은 의미가 맞지 않았다. 역할을 드러내는 다른 이름(`registerRestaurant`)으로 정리했다.
-
-### 6. 에러 처리에서의 실수
-
-**useCallback 의존성 배열에 error state를 넣은 것**
-
-`catch` 블록에서 `setError`를 쓰니 `error`가 의존성이라 생각해 `useCallback`의 의존성 배열에 `[error]`를 넣었다. 에러 발생 → `error` state 변경 → `fetchRestaurants` 재생성 → `useEffect` 재실행 → 또 에러 → 무한루프가 된다. `fetchRestaurants`는 `error`를 읽지 않고 `setError`만 호출하므로 의존성 배열은 `[]`가 맞다.
-
-**catch에서 state 변수를 그대로 setError에 넣은 것**
-
-```js
-const [error, setError] = useState();
-
-catch {
-  setError(error);  // error는 발생한 에러가 아니라 state 변수
-}
-```
-
-`catch` 블록에서 발생한 에러를 받으려면 `catch (e)`로 변수를 선언해야 한다. 변수명을 state와 같은 `error`로 쓰면 헷갈리므로 `e`처럼 다른 이름을 쓰거나, 에러 객체가 필요 없으면 그냥 `catch`로 쓴다.
+`RestaurantList.jsx`에서 `const RestaurantList = styled.ul`과 `function RestaurantList()`를 같은 이름으로 선언해 에러가 났다. 파일명과 컴포넌트 함수명이 같을 때 내부 styled component 이름이 충돌할 수 있다. styled component 이름을 `RestaurantUl`로 바꿔 해결했다.
 
 ## 🛠 리팩토링
 
-**1. fetchRestaurants에 useCallback 적용 + POST 후 await 추가**
+### 1. `css` 헬퍼로 공통 typography 추출
 
-`fetchRestaurants`를 `useCallback`으로 감싸 참조를 안정화하고, 의존성 배열을 `[]`에서 `[fetchRestaurants]`로 수정했다. `handleFormSubmit`에서 `fetchRestaurants()` 호출 시 `await`를 추가해 POST 완료 후 GET이 실행되도록 순서를 보장했다.
+과거 코드 리뷰에서 `src/styles/common.js`로 공통 스타일을 추출하는 방식을 보고 현재 코드에 적용했다. `RestaurantName`, `ModalTitle` 등 여러 컴포넌트에 typography 값이 직접 작성되어 있어 중복이 있었는데, `src/styles/typography.js`를 만들어 `textTitle`, `textSubtitle`, `textBody`, `textCaption`을 `css` 헬퍼로 추출하고 각 컴포넌트에서 `${textSubtitle}` 형태로 사용하도록 개선했다.
 
-**2. 매직 스트링 상수화**
-
-`"전체"`라는 문자열이 여러 곳에 흩어져 있었다. 오타가 생겨도 찾기 어렵고, 변경 시 모든 곳을 바꿔야 한다. `ALL_CATEGORY` 상수로 추출해 한 곳에서 관리하도록 했다.
-
-**3. aria-label + alt 중복 제거**
-
-스크린 리더는 `aria-label`과 `alt`를 모두 읽는다. 버튼에 `aria-label="음식점 추가"`가 있을 때 내부 이미지에 같은 내용의 `alt`를 두면 "음식점 추가 음식점 추가"로 두 번 읽힌다. `alt`를 제거해 중복을 없앴다.
-
-**4. void 키워드**
-
-`useEffect`는 cleanup 함수 또는 `undefined`를 반환해야 한다. async 함수는 항상 Promise를 반환하므로 `useEffect` 콜백에서 async 함수를 직접 호출하면 Promise가 반환되어 경고가 발생한다. `void`를 붙이면 반환값을 `undefined`로 만들어 이를 방지한다.
+초기에는 `styled.label`로 컴포넌트를 만들어 export하는 방식을 시도했는데, 두 접근의 차이는 다음과 같다.
 
 ```js
-useEffect(() => {
-  void fetchRestaurants();  // Promise를 버리고 undefined 반환
-}, [fetchRestaurants]);
+// styled.label — label 태그에 종속된 React 컴포넌트
+const TextCaption = styled.label`
+  font-size: 14px;
+`;
+// JSX에서 <TextCaption>으로 사용 → 항상 <label>로 렌더링
+// h3, span 등 다른 태그에는 재사용 불가
+
+// css 헬퍼 — 태그 없는 CSS 조각
+const textCaption = css`
+  font-size: 14px;
+`;
+// styled component 안에 ${textCaption}으로 삽입
+// 어떤 태그의 styled component에든 재사용 가능
+const Title = styled.h3`
+  ${textCaption}
+`;
+const HelpText = styled.span`
+  ${textCaption}
+`;
 ```
 
-**5. BASE_URL 추출 + api.js 분리**
+typography는 특정 태그가 아니라 여러 요소에 공통으로 적용되는 스타일이므로 `css` 헬퍼가 적합하다.
 
-URL을 컴포넌트 안에 직접 쓰면 여러 곳에 흩어지고 변경 시 모두 찾아야 한다. `BASE_URL` 상수로 추출하고, HTTP 요청 로직 전체를 `api.js`로 분리했다.
+### 2. `Button`, `ModalButtonContainer` 위치 재조정
 
-**6. useRestaurants 커스텀 훅 분리**
+`AddRestaurantModal`과 `RestaurantDetailModal`에 동일한 `Button`, `ModalButtonContainer`가 각각 정의되어 있었다. 처음에는 `Modal.jsx`에서 한 번만 정의하고 `export`해서 두 컴포넌트에서 import해 사용하는 방식을 택했다.
 
-레스토랑 데이터 관련 state + 함수를 `useRestaurants`로 분리했다. App은 어떻게 데이터를 불러오는지 몰라도 되고, 결과만 받아 UI를 그린다.
+1번과 다르게 `css` 헬퍼 방식이 아닌 styled component 자체를 export한 이유는, `Button`은 JSX에서 `<Button $primary>추가하기</Button>`처럼 사용되어야 하기 때문이다. `css` 헬퍼는 CSS 조각일 뿐이라 JSX에서 컴포넌트처럼 쓸 수 없다. `css` 헬퍼로 추출했다면 각 파일에서 여전히 `const Button = styled.button`${buttonStyles}``처럼 컴포넌트를 따로 만들어야 해서 중복이 그대로 남는다. styled component 자체를 export하면 props 처리(`$primary`), 의사 클래스(`&:last-child`) 등 컴포넌트 전체가 재사용된다.
 
-```js
-// 분리 전 — App에 데이터 로직이 섞임
-const [newRestaurants, setNewRestaurants] = useState([]);
-const fetchRestaurants = useCallback(async () => { ... }, []);
-useEffect(() => { void fetchRestaurants(); }, [fetchRestaurants]);
+다만 코드 리뷰에서 `Modal.jsx`는 백드롭, 컨테이너, 타이틀, ESC 키 처리처럼 모달 껍데기에 대한 책임만 가져야 하는데, 자신이 렌더링하지 않는 `Button` 스타일까지 `export`하고 있어 파일의 역할이 불명확하다는 피드백을 받았다. 리뷰어의 제안대로 각 모달이 자신의 `Button`, `ModalButtonContainer`를 직접 정의하는 방향으로 되돌렸다. 두 모달에 걸쳐 약 20줄의 중복이 생기지만, `Modal.jsx`는 모달 껍데기 책임만 유지하고 각 파일이 자신에게 필요한 것만 갖는 구조가 더 명확하다고 판단했다. 버튼 변형이 늘어나거나 모달 외 다른 곳에서도 쓰이게 되면 그때 `src/components/common/Button.jsx`로 분리하는 게 자연스러운 확장 방향이라고 생각한다.
 
-// 분리 후 — 한 줄로
-const { newRestaurants, registerRestaurant, error, isLoading } = useRestaurants();
-```
+### 3. Modal의 접근성 책임 보강
 
-**7. 에러 처리 + 로딩 상태 추가**
+코드 리뷰에서 모달에 `role`, `aria-modal`, `aria-labelledby`, Escape 키 닫기가 빠져있다는 피드백을 받았다. 백드롭 클릭으로만 닫히는 구조라 키보드 사용자나 스크린리더 사용자는 모달을 닫을 방법이 없었다.
 
-GET 에러는 훅에서 `error` state로, POST 에러는 App에서 `alert`으로 처리하도록 레이어를 나눴다. `finally`로 성공/실패 상관없이 로딩 상태가 해제되도록 했다.
+`role="dialog"`, `aria-modal="true"`로 스크린리더에 모달임을 알리고, `aria-labelledby`로 제목과 연결했다. `useEffect`로 `window`에 keydown 리스너를 등록해 Escape 키로 닫히도록 했다. `useEffect`가 "외부 시스템과 동기화"하는 용도라는 걸 다시 체감했는데, 이번엔 외부 시스템이 API가 아니라 브라우저의 키보드 이벤트였다는 점이 새로웠다.
+
+### 4. 하드코딩된 색상값을 디자인 토큰으로
+
+`Header`의 `color: #fcfcfd`, `RestaurantList`의 `border-bottom: 1px solid #e9eaed`처럼 `App.css`의 `:root`에 없는 색상이 컴포넌트에 하드코딩되어 있다는 리뷰를 받았다. `App.css`의 `:root`에 `--grey-50`, `--grey-150`을 추가하고 `var()`로 참조하도록 수정했다.
+
+색상 값이 여러 컴포넌트에 흩어져 있으면 디자인이 바뀔 때 일일이 찾아 고쳐야 하는데, 변수로 한 곳에서 관리하면(Single Source of Truth) 그 한 곳만 바꾸면 전체에 반영된다는 점을 이해했다.
+
+### 5. 같은 스타일을 두 군데서 선언한 중복
+
+`FormItem`의 `label { }` 선택자가 이미 모든 자식 label에 `${textCaption}`을 적용하고 있는데, `TextCaption`이라는 별도 styled component를 만들어 같은 스타일을 또 선언하고 있었다. `TextCaption`은 항상 `FormItem` 안에서만 쓰였기 때문에 불필요한 중복이었고, 제거하고 일반 `<label>` 태그로 교체했다.
+
+`select`와 `textarea`도 비슷한 문제가 있었다. `input, select`로 공통 스타일을 묶어놓고 `select`, `textarea`에 각각 같은 속성을 다시 선언하고 있었다. `input, select, textarea`로 공통 속성을 한 번에 묶고, 각 태그에는 고유한 속성만 남기도록 정리했다.
+
+이 과정에서 여러 선택자가 같은 요소에 같은 스타일을 중복 적용하고 있는지 확인하는 습관이 필요하다는 것을 배웠다.
 
 ## 과거 코드와 비교
 
 ### 달라진 점
 
-**1. useCallback 사용 여부**
+**공통 스타일 파일 미분리**
 
-| 구분 | 과거 코드 | 현재 코드 |
-|------|---------|---------|
-| fetchRestaurants 선언 | `useCallback`으로 감쌈 | 일반 async 함수 |
-| 의존성 배열 | `[fetchRestaurants]` | `[]` |
-
-과거 코드는 `fetchRestaurants`를 의존성 배열에 넣기 위해 `useCallback`으로 참조를 안정화했다. 현재 코드는 `useCallback` 없이 `[]`로 뒀다.
-
-**2. id 생성 방식**
-
-과거 코드는 처음에 `` `a${Date.now()}` ``로 클라이언트에서 id를 생성해 POST 요청에 포함했다. 리뷰를 통해 클라이언트 생성 id의 문제(밀리초 충돌, 시스템 시간 불일치)를 인지하고 id를 보내지 않아 서버가 발급하도록 수정했다. 현재 코드도 같은 방식이다.
+과거 코드는 `src/styles/common.js`를 만들어 typography, buttonBase, formItemBase 등 반복되는 스타일을 `css` 헬퍼로 추출해 여러 컴포넌트에서 가져다 썼다. 현재 코드는 각 컴포넌트에 스타일을 직접 작성했다.
 
 ### 과거 코드에서 배운 점
 
-**1. useCallback — 의존성 배열에 함수를 올바르게 넣는 방법**
+**HTML 기본 검증과 JS 검증의 역할 차이**
 
-과거 코드는 `fetchRestaurants`를 `useCallback`으로 감싸 참조를 안정화하고 `[fetchRestaurants]`를 의존성 배열에 넣었다. 이를 반영해 현재 코드도 수정했다.
+과거 코드는 `required` 없이 상태값을 그대로 `onAdd`에 넘겨서 빈 문자열로 제출이 가능했다. 리뷰어가 이를 지적했고, 이를 통해 입력값 검증을 어느 시점에, 어떤 방식으로 해야 하는지 생각하게 됐다.
 
-```jsx
-// 수정 전
-const fetchRestaurants = async () => { ... };
-useEffect(() => { fetchRestaurants(); }, []);
+HTML `required` 속성은 브라우저 레벨에서 폼 제출 자체를 막는다. `e.preventDefault()`나 JS submit 핸들러가 실행되기 전에 먼저 동작한다. 반면 JS 검증은 더 세밀한 조건(형식, 중복 등)을 다룰 때 필요하다. 현재 코드에서 `required`가 있는 건 원본 JSX에서 딸려온 것이지만, 덕분에 두 방식의 역할 차이를 이해하게 됐다.
 
-// 수정 후
-const fetchRestaurants = useCallback(async () => { ... }, []);
-useEffect(() => { fetchRestaurants(); }, [fetchRestaurants]);
+**공통 스타일 추출 (`css` 헬퍼)**
+
+과거 코드는 `src/styles/common.js`에 typography, buttonBase 등 반복되는 스타일을 `css` 헬퍼로 추출해 여러 컴포넌트에서 가져다 썼다.
+
+```js
+// common.js
+export const typography = {
+  subtitle: css`
+    font-size: 18px;
+    line-height: 28px;
+    font-weight: 600;
+  `,
+};
+
+// 컴포넌트에서
+const RestaurantName = styled.h3`
+  ${typography.subtitle}
+`;
 ```
 
-리뷰어는 대안으로 `useEffect` 안에 함수 선언+실행을 모두 두는 방법도 제시했다. 이 경우 함수가 밖으로 나가지 않아 의존성 배열에 넣을 필요가 없다. 현재 코드에서는 `handleFormSubmit`에서도 `fetchRestaurants`를 재사용해야 해서 이 방법을 선택하지 않았다.
-
-**2. await와 race condition**
-
-POST 요청 후 `await` 없이 GET을 호출하면 POST가 완료되기 전에 GET이 먼저 실행돼 추가한 항목이 목록에 뜨지 않을 수 있다. `await`로 순서를 명시적으로 보장해야 한다.
-
-```jsx
-// 수정 전 — race condition 위험
-await fetch(URL, { method: "POST", ... });
-fetchRestaurants();
-
-// 수정 후 — 순서 보장
-await fetch(URL, { method: "POST", ... });
-await fetchRestaurants();
-```
+styled-components의 `css` 헬퍼는 스니펫(재사용 가능한 스타일 조각)을 JS 변수로 만들어 재사용할 수 있게 해준다. App.css의 전역 Typography 클래스가 하던 역할을 CSS-in-JS 방식으로 대체한 것이다. 이를 통해 기존 코드의 공통 스타일 추출 접근법을 styled-components 방식으로 구현했다.
