@@ -1,31 +1,26 @@
 import addButtonImg from "../../assets/add-button.png";
 import styled from "styled-components";
+import { textTitle } from "../../styles/typography";
 
 const Gnb = styled.header`
   display: flex;
   justify-content: space-between;
   align-items: center;
   height: 64px;
-
   padding: 0 16px;
-
   background-color: var(--primary-color);
 `;
 
 const GnbTitle = styled.h1`
-  font-size: 20px;
-  line-height: 24px;
-  font-weight: 600;
+  ${textTitle}
   color: #fcfcfd;
 `;
 
 const GnbButton = styled.button`
   height: 40px;
-
   border: none;
   border-radius: 8px;
   background: transparent;
-
   font-size: 24px;
   cursor: pointer;
 `;

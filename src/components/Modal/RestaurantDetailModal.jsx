@@ -1,5 +1,6 @@
 import Modal from "./Modal";
 import styled from "styled-components";
+import { textBody, textCaption } from "../../styles/typography";
 
 const ModalInfo = styled.div`
   margin-bottom: 24px;
@@ -10,9 +11,7 @@ const ModalButtonContainer = styled.div`
 `;
 
 const TextBody = styled.p`
-  font-size: 16px;
-  line-height: 24px;
-  font-weight: 400;
+  ${textBody}
 `;
 
 const Button = styled.button`
@@ -34,9 +33,7 @@ const Button = styled.button`
     margin-right: 0;
   }
 
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: 400;
+  ${textCaption}
 `;
 
 export default function RestaurantDetailModal({ clickedRestaurant, onClose }) {

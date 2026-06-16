@@ -2,6 +2,7 @@ import { CATEGORIES } from "../../constants/categories";
 import { useState } from "react";
 import Modal from "./Modal";
 import styled from "styled-components";
+import { textCaption } from "../../styles/typography";
 
 const FormItem = styled.div`
   display: flex;
@@ -10,7 +11,7 @@ const FormItem = styled.div`
 
   label {
     color: var(--grey-400);
-    font-size: 14px;
+    ${textCaption}
   }
 
   input,
@@ -52,15 +53,11 @@ const FormItem = styled.div`
 
 const FormHelpText = styled.span`
   color: var(--grey-300);
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: 400;
+  ${textCaption}
 `;
 
 const TextCaption = styled.label`
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: 400;
+  ${textCaption}
 `;
 
 const ModalButtonContainer = styled.div`
@@ -86,9 +83,7 @@ const Button = styled.button`
     margin-right: 0;
   }
 
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: 400;
+  ${textCaption}
 `;
 
 export default function AddRestaurantModal({ onSubmit, onClose }) {

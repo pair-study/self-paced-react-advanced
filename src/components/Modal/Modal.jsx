@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { textTitle } from "../../styles/typography";
 
 const ModalBackdrop = styled.div`
   position: fixed;
@@ -20,9 +21,7 @@ const ModalContainer = styled.div`
 
 const ModalTitle = styled.h2`
   margin-bottom: 36px;
-  font-size: 20px;
-  line-height: 24px;
-  font-weight: 600;
+  ${textTitle}
 `;
 
 export default function Modal({ title, onClose, children }) {
