@@ -1,6 +1,7 @@
 import Modal from "./Modal";
 import styled from "styled-components";
 import { textBody, textCaption } from "../../styles/typography";
+import { useModalContext } from "../../context/ModalContext";
 
 const ModalInfo = styled.div`
   margin-bottom: 24px;
@@ -36,7 +37,8 @@ const Button = styled.button`
   ${textCaption}
 `;
 
-export default function RestaurantDetailModal({ clickedRestaurant, onClose }) {
+export default function RestaurantDetailModal() {
+  const { clickedRestaurant, handleDetailModalClose: onClose } = useModalContext();
   return (
     <Modal title={clickedRestaurant.name} onClose={onClose}>
       <ModalInfo>

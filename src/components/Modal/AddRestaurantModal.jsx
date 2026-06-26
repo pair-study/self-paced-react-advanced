@@ -3,6 +3,7 @@ import { useState } from "react";
 import Modal from "./Modal";
 import styled from "styled-components";
 import { textCaption } from "../../styles/typography";
+import { useModalContext } from "../../context/ModalContext";
 
 const FormItem = styled.div`
   display: flex;
@@ -75,7 +76,8 @@ const Button = styled.button`
   ${textCaption}
 `;
 
-export default function AddRestaurantModal({ onSubmit, onClose }) {
+export default function AddRestaurantModal() {
+  const { handleFormSubmit: onSubmit, handleAddModalClose: onClose } = useModalContext();
   const [category, setCategory] = useState("");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");

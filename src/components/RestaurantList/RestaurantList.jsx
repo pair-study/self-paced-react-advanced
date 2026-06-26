@@ -1,6 +1,8 @@
 import { CATEGORY_IMAGES } from "../../constants/categoryImages";
 import styled from "styled-components";
 import { textSubtitle, textBody } from "../../styles/typography";
+import { useRestaurantContext } from "../../context/RestaurantContext";
+import { useModalContext } from "../../context/ModalContext";
 
 const ListContainer = styled.section`
   display: flex;
@@ -69,13 +71,15 @@ const RestaurantDescription = styled.p`
   ${textBody}
 `;
 
-export default function RestaurantList({ restaurants, onRestaurantClick }) {
+export default function RestaurantList() {
+  const { filteredRestaurants } = useRestaurantContext();
+  const { handleRestaurantClick } = useModalContext();
   return (
     <ListContainer>
       <RestaurantUl>
-        {restaurants.map((restaurant) => (
+        {filteredRestaurants.map((restaurant) => (
           <Restaurant key={restaurant.id}>
-            <RestaurantButton onClick={() => onRestaurantClick(restaurant)}>
+            <RestaurantButton onClick={() => handleRestaurantClick(restaurant)}>
               <RestaurantCategory>
                 <CategoryIcon
                   src={CATEGORY_IMAGES[restaurant.category]}

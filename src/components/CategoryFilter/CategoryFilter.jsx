@@ -1,6 +1,7 @@
 import { FILTER_OPTIONS } from "../../constants/categories";
 import styled from "styled-components";
 import { textBody } from "../../styles/typography";
+import { useRestaurantContext } from "../../context/RestaurantContext";
 
 const FilterContainer = styled.section`
   display: flex;
@@ -19,7 +20,8 @@ const FilterSelect = styled.select`
   padding: 8px;
 `;
 
-export default function CategoryFilter({ category, onChangeCategory }) {
+export default function CategoryFilter() {
+  const { category, handleSelectChange } = useRestaurantContext();
   return (
     <FilterContainer>
       <FilterSelect
@@ -27,7 +29,7 @@ export default function CategoryFilter({ category, onChangeCategory }) {
         id="category-filter"
         aria-label="음식점 카테고리 필터"
         value={category}
-        onChange={onChangeCategory}
+        onChange={handleSelectChange}
       >
         {FILTER_OPTIONS.map((option) => (
           <option key={option} value={option}>
