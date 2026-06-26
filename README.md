@@ -3,7 +3,7 @@
 | | 강예령 | 남유성 |
 |---|---|---|
 | Step1 | [cactus-adv-1](https://github.com/pair-study/self-paced-react-advanced/tree/cactus-adv-1) , [PR #2](https://github.com/pair-study/self-paced-react-advanced/pull/2) | [hippo-adv-1](https://github.com/pair-study/self-paced-react-advanced/tree/hippo-adv-1) , [PR #1](https://github.com/pair-study/self-paced-react-advanced/pull/1) |
-| Step2-1 |  |  |
+| Step2-1 |  | [hippo-adv-2.1](https://github.com/pair-study/self-paced-react-advanced/tree/hippo-adv-2.1) , [PR #3](https://github.com/pair-study/self-paced-react-advanced/pull/3) |
 | Step2-2 |  |  |
 | Step2-3 |  |  |
 
