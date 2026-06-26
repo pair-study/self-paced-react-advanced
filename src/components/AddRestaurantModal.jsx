@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import Modal from "./Modal.jsx";
 import { CATEGORIES } from "../constants/categories.js";
 import styled from "styled-components";
+import { RestaurantsContext } from "../context/RestaurantsContext.jsx";
 
 const FormItem = styled.div`
   display: flex;
@@ -77,14 +78,21 @@ const Button = styled.button`
   color: var(--grey-100);
 `;
 
-export default function AddRestaurantModal({ onSubmit, onClose }) {
+export default function AddRestaurantModal({ onClose }) {
   const [category, setCategory] = useState("");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const { addRestaurant } = useContext(RestaurantsContext);
 
-  function handleFormSubmit(e) {
+  async function handleFormSubmit(e) {
     e.preventDefault();
-    onSubmit({ category, name, description });
+
+    try {
+      await addRestaurant({ category, name, description });
+      onClose();
+    } catch {
+      alert("음식점 추가에 실패했습니다. 다시 시도해주세요.");
+    }
   }
 
   return (
