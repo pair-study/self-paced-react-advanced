@@ -1,6 +1,26 @@
 import { useEffect } from "react";
 import styled from "styled-components";
 
+export default function Modal({ children, title, onClose }) {
+  useEffect(() => {
+    function handleKeyDown(e) {
+      if (e.key === "Escape") onClose();
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
+  return (
+    <>
+      <ModalBackdrop onClick={onClose}></ModalBackdrop>
+      <ModalContainer>
+        <ModalTitle>{title}</ModalTitle>
+        {children}
+      </ModalContainer>
+    </>
+  );
+}
+
 const ModalBackdrop = styled.div`
   position: fixed;
   top: 0;
@@ -25,23 +45,3 @@ const ModalTitle = styled.h2`
   line-height: 24px;
   font-weight: 600;
 `;
-
-export default function Modal({ children, title, onClose }) {
-  useEffect(() => {
-    function handleKeyDown(e) {
-      if (e.key === "Escape") onClose();
-    }
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
-
-  return (
-    <>
-      <ModalBackdrop onClick={onClose}></ModalBackdrop>
-      <ModalContainer>
-        <ModalTitle>{title}</ModalTitle>
-        {children}
-      </ModalContainer>
-    </>
-  );
-}
