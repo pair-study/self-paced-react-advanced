@@ -9,11 +9,11 @@ import { useModalContext } from "./context/useModalContext";
 
 export default function App() {
   const { error, isLoading } = useRestaurantContext();
-  const { clickedRestaurant, isAddModalOpen, handleAddModalOpen } = useModalContext();
+  const { clickedRestaurant, isAddModalOpen } = useModalContext();
 
   return (
     <>
-      <Header onClick={handleAddModalOpen} />
+      <Header />
       <main>
         {isLoading && <p>로딩중입니다.</p>}
         {error && <p>{error}</p>}

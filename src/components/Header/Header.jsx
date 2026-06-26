@@ -1,6 +1,7 @@
 import addButtonImg from "../../assets/add-button.png";
 import styled from "styled-components";
 import { textTitle } from "../../styles/typography";
+import { useModalContext } from "../../context/useModalContext";
 
 const Gnb = styled.header`
   display: flex;
@@ -32,11 +33,13 @@ const GnbButtonImg = styled.img`
   object-fit: contain;
 `;
 
-export default function Header({ onClick }) {
+export default function Header() {
+  const { handleAddModalOpen } = useModalContext();
+
   return (
     <Gnb>
       <GnbTitle>점심 뭐 먹지</GnbTitle>
-      <GnbButton type="button" aria-label="음식점 추가" onClick={onClick}>
+      <GnbButton type="button" aria-label="음식점 추가" onClick={handleAddModalOpen}>
         <GnbButtonImg src={addButtonImg} alt="" />
       </GnbButton>
     </Gnb>
