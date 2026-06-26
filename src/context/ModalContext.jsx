@@ -1,8 +1,7 @@
-/* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useState } from "react";
-import { useRestaurantContext } from "./RestaurantContext";
+import { createContext, useState } from "react";
+import { useRestaurantContext } from "./useRestaurantContext";
 
-const ModalContext = createContext();
+export const ModalContext = createContext();
 
 export function ModalProvider({ children }) {
   const { registerRestaurant } = useRestaurantContext();
@@ -49,8 +48,4 @@ export function ModalProvider({ children }) {
       {children}
     </ModalContext.Provider>
   );
-}
-
-export function useModalContext() {
-  return useContext(ModalContext);
 }

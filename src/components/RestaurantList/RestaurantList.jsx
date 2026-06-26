@@ -1,8 +1,8 @@
 import { CATEGORY_IMAGES } from "../../constants/categoryImages";
 import styled from "styled-components";
 import { textSubtitle, textBody } from "../../styles/typography";
-import { useRestaurantContext } from "../../context/RestaurantContext";
-import { useModalContext } from "../../context/ModalContext";
+import { useRestaurantContext } from "../../context/useRestaurantContext";
+import { useModalContext } from "../../context/useModalContext";
 
 const ListContainer = styled.section`
   display: flex;

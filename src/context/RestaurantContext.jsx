@@ -1,9 +1,8 @@
-/* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useState } from "react";
+import { createContext, useState } from "react";
 import { useRestaurants } from "../hooks/useRestaurants";
 import { ALL_CATEGORY } from "../constants/categories";
 
-const RestaurantContext = createContext();
+export const RestaurantContext = createContext();
 
 export function RestaurantProvider({ children }) {
   const { newRestaurants, registerRestaurant, error, isLoading } =
@@ -33,8 +32,4 @@ export function RestaurantProvider({ children }) {
       {children}
     </RestaurantContext.Provider>
   );
-}
-
-export function useRestaurantContext() {
-  return useContext(RestaurantContext);
 }

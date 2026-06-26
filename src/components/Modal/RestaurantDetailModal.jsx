@@ -1,7 +1,7 @@
 import Modal from "./Modal";
 import styled from "styled-components";
 import { textBody, textCaption } from "../../styles/typography";
-import { useModalContext } from "../../context/ModalContext";
+import { useModalContext } from "../../context/useModalContext";
 
 const ModalInfo = styled.div`
   margin-bottom: 24px;

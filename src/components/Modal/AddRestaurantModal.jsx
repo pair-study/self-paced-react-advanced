@@ -3,7 +3,7 @@ import { useState } from "react";
 import Modal from "./Modal";
 import styled from "styled-components";
 import { textCaption } from "../../styles/typography";
-import { useModalContext } from "../../context/ModalContext";
+import { useModalContext } from "../../context/useModalContext";
 
 const FormItem = styled.div`
   display: flex;

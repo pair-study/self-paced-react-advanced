@@ -3,8 +3,8 @@ import CategoryFilter from "./CategoryFilter/CategoryFilter";
 import RestaurantList from "./RestaurantList/RestaurantList";
 import RestaurantDetailModal from "./Modal/RestaurantDetailModal";
 import AddRestaurantModal from "./Modal/AddRestaurantModal";
-import { useRestaurantContext } from "../context/RestaurantContext";
-import { useModalContext } from "../context/ModalContext";
+import { useRestaurantContext } from "../context/useRestaurantContext";
+import { useModalContext } from "../context/useModalContext";
 
 export default function AppContent() {
   const { error, isLoading } = useRestaurantContext();

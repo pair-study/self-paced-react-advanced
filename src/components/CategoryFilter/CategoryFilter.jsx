@@ -1,7 +1,7 @@
 import { FILTER_OPTIONS } from "../../constants/categories";
 import styled from "styled-components";
 import { textBody } from "../../styles/typography";
-import { useRestaurantContext } from "../../context/RestaurantContext";
+import { useRestaurantContext } from "../../context/useRestaurantContext";
 
 const FilterContainer = styled.section`
   display: flex;
