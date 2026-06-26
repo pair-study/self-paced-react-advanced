@@ -1,7 +1,7 @@
 import { createContext, useState } from "react";
 import { useRestaurantContext } from "./useRestaurantContext";
 
-export const ModalContext = createContext();
+export const ModalContext = createContext(null);
 
 export function ModalProvider({ children }) {
   const { registerRestaurant } = useRestaurantContext();

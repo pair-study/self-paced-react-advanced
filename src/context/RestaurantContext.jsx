@@ -2,7 +2,7 @@ import { createContext, useState } from "react";
 import { useRestaurants } from "../hooks/useRestaurants";
 import { ALL_CATEGORY } from "../constants/categories";
 
-export const RestaurantContext = createContext();
+export const RestaurantContext = createContext(null);
 
 export function RestaurantProvider({ children }) {
   const { newRestaurants, registerRestaurant, error, isLoading } =
