@@ -1,6 +1,23 @@
 import Modal from "./Modal";
 import styled from "styled-components";
 import { textBody, textCaption } from "../../styles/typography";
+
+export default function RestaurantDetailModal({ restaurant, onClose }) {
+  return (
+    <Modal title={restaurant.name} onClose={onClose}>
+      <ModalInfo>
+        <TextBody>{restaurant.description}</TextBody>
+      </ModalInfo>
+      {/* 닫기 버튼 */}
+      <ModalButtonContainer>
+        <Button $primary onClick={onClose}>
+          닫기
+        </Button>
+      </ModalButtonContainer>
+    </Modal>
+  );
+}
+
 const ModalInfo = styled.div`
   margin-bottom: 24px;
 `;
@@ -34,19 +51,3 @@ const Button = styled.button`
 
   ${textCaption}
 `;
-
-export default function RestaurantDetailModal({ restaurant, onClose }) {
-  return (
-    <Modal title={restaurant.name} onClose={onClose}>
-      <ModalInfo>
-        <TextBody>{restaurant.description}</TextBody>
-      </ModalInfo>
-      {/* 닫기 버튼 */}
-      <ModalButtonContainer>
-        <Button $primary onClick={onClose}>
-          닫기
-        </Button>
-      </ModalButtonContainer>
-    </Modal>
-  );
-}

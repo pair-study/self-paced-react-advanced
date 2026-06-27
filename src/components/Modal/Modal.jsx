@@ -2,6 +2,28 @@ import { useEffect, useId } from "react";
 import styled from "styled-components";
 import { textTitle } from "../../styles/typography";
 
+export default function Modal({ title, onClose, children }) {
+  const titleId = useId();
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
+  return (
+    <>
+      <ModalBackdrop onClick={onClose} />
+      <ModalContainer role="dialog" aria-modal="true" aria-labelledby={titleId}>
+        <ModalTitle id={titleId}>{title}</ModalTitle>
+        {children}
+      </ModalContainer>
+    </>
+  );
+}
+
 const ModalBackdrop = styled.div`
   position: fixed;
   top: 0;
@@ -24,25 +46,3 @@ const ModalTitle = styled.h2`
   margin-bottom: 36px;
   ${textTitle}
 `;
-
-export default function Modal({ title, onClose, children }) {
-  const titleId = useId();
-
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
-
-  return (
-    <>
-      <ModalBackdrop onClick={onClose} />
-      <ModalContainer role="dialog" aria-modal="true" aria-labelledby={titleId}>
-        <ModalTitle id={titleId}>{title}</ModalTitle>
-        {children}
-      </ModalContainer>
-    </>
-  );
-}
