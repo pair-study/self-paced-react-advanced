@@ -139,17 +139,87 @@ TailwindCSS는 미리 정의된 유틸리티 클래스를 조합하는 방식으
 - 핵심 키워드: `Context API`
 
 ### 스터디 세션 기록
-> 날짜: 2026.06.25 ~ 2026.06.27
+> 날짜: 2026.06.17 ~ 2026.06.27
 
 ### 공통으로 어려웠던 점
 
+#### 1. Context에 무엇을 올릴 것인가
+
+Context는 props drilling을 해결하는 도구이기도 하지만, 그게 전부가 아니다. **어떤 상태를 올려야 하는가**에 대한 명확한 기준 없이 접근하면 범위가 쉽게 과해진다.
+
+논의 끝에 아래 기준으로 정리했다.
+
+| 상태 종류 | 적합한 위치 | 이유 |
+|---|---|---|
+| 서버 데이터 (`restaurants`, `addRestaurant`, `isLoading`, `error`) | Context | 여러 컴포넌트가 공유하는 데이터 도메인 |
+| UI 상태 (`selectedCategory`, `clickedRestaurant`, `isAddModalOpen`) | App 로컬 state + props | 특정 화면의 인터랙션 상태로, App이 직접 자식에게 props로 내리면 충분 |
+
+핵심은 Context가 **props 대신 쓰는 도구**가 아니라 **여러 컴포넌트가 공유하는 데이터를 올리는 통로**라는 것이다. UI 상태를 Context에 올리면, value가 바뀔 때 그 Context를 구독하는 모든 컴포넌트가 리렌더링되는 문제가 생긴다.
 
 ### 서로 다르게 접근한 부분
 
+#### 1. Context 범위 — 서버 데이터만 vs UI 상태까지
+
+**hippo — RestaurantsContext 하나, 서버 데이터만**
+
+```jsx
+export const RestaurantsContext = createContext(null);
+
+export function RestaurantsProvider({ children }) {
+  const { restaurants, addRestaurant, isLoading, error } = useRestaurants();
+  return (
+    <RestaurantsContext.Provider value={{ restaurants, addRestaurant, isLoading, error }}>
+      {children}
+    </RestaurantsContext.Provider>
+  );
+}
+// App은 UI 상태(selectedCategory, clickedRestaurant, isAddRestaurantModalOpen)만 관리
+```
+
+**cactus — RestaurantContext + ModalContext 두 개**
+
+- RestaurantContext: 서버 데이터 + 카테고리 필터 상태
+- ModalContext: `clickedRestaurant`, `isAddModalOpen`, 핸들러 등 UI 상태
+- App의 역할 과부하 해소를 목표로 모든 상태를 Context로 분리
+
+스터디 이후 Context 리렌더링 특성을 고려해 ModalContext를 제거하고 UI 상태를 App 로컬로 되돌리는 방향으로 리팩토링 완료.
+
+#### 2. 커스텀 훅 분리 — useContext 직접 호출 vs 래퍼 훅
+
+**hippo — 컴포넌트에서 useContext 직접 호출**
+
+```jsx
+import { useContext } from "react";
+import { RestaurantsContext } from "../context/RestaurantsContext.jsx";
+
+const { addRestaurant } = useContext(RestaurantsContext);
+```
+
+**cactus — useRestaurantContext 커스텀 훅 분리 (null guard 포함)**
+
+```jsx
+export function useRestaurantContext() {
+  const context = useContext(RestaurantContext);
+  if (context === null) {
+    throw new Error("useRestaurantContext는 RestaurantProvider 내부에서만 사용할 수 있습니다.");
+  }
+  return context;
+}
+```
+
+hippo 방식은 단순하지만 컴포넌트마다 `useContext`와 Context 객체를 함께 import해야 한다. cactus 방식은 import가 줄고, Provider 바깥에서 사용했을 때 명시적인 에러가 발생해 디버깅이 쉽다.
 
 ### 기술 선택과 트레이드오프
 
+React에서 상태를 관리하는 도구는 목적에 따라 나뉜다.
 
+- **Context API** — React 내장. 컴포넌트 트리 전체에 값을 공급하는 통로. 인증, 테마처럼 앱 전반에 걸쳐 공유되는 상태에 적합하다.
+- **Zustand** — 클라이언트 전역 상태 관리 라이브러리. Context보다 리렌더링 최적화가 쉽고 설정이 간단하다.
+- **TanStack Query** — 서버 상태 전용. fetching, caching, 동기화를 자동으로 처리한다.
+
+이번 미션에서 Context에 올린 값(`newRestaurants`, `registerRestaurant`, `isLoading`, `error`)은 전부 서버 상태다. Context API 사용이 조건이 아니었다면, `useRestaurants` 훅을 TanStack Query로 대체하는 것이 더 자연스러운 선택이었을 것이다. 캐싱, 로딩/에러 상태, 재시도 처리를 별도로 구현하지 않아도 되기 때문이다.
+
+Zustand와 TanStack Query는 이후 미션(Step2-2, Step2-3)에서 직접 적용하며 다룬다.
 
   ---
 
