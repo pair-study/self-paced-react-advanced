@@ -1,155 +1,269 @@
-# 전역상태관리 - Context API
+# 전역상태관리 - Zustand
 
 ## 🎯 개인 목표 및 목표 달성을 위한 행동 가이드
 
-이번 미션을 통해 다음과 같은 학습 경험들을 쌓는 것을 목표로 한다.
-
-- 현재 코드에서 props drilling이 어디서 발생하는지 직접 찾아보고, Context API가 이를 어떻게 해소하는지 체감한다.
-- `createContext`, `Provider`, `useContext`의 역할과 데이터 흐름을 이해하고, 세 요소가 어떻게 연결되는지 스스로 설명할 수 있는 수준으로 익힌다.
-- Context API를 쓰는 것이 적절한 상황과 그렇지 않은 상황(trade-off)을 이해하고, 그 판단 근거를 PR에 직접 서술한다.
-- 컴포넌트와 Context 간의 관계를 도식화해보며 데이터 흐름을 시각적으로 이해하는 경험을 쌓는다.
+- Zustand의 핵심 개념(`create`, `set`, `get`, selector)을 직접 마이그레이션하며 손에 익힌다.
+- Context API와 Zustand가 각각 어떤 문제를 해결하는지, 언제 어떤 도구를 쓸지 판단 기준을 세운다.
+- 단순히 문법 변환에 그치지 않고, 두 도구의 구조적 차이가 왜 생기는지 설명할 수 있는 수준으로 이해한다.
 
 ## 📝 기능 구현 목록
 
-- `RestaurantContext` 생성 — `newRestaurants`, `registerRestaurant`, `isLoading`, `error` 관리
-- `RestaurantProvider`를 `main.jsx`에서 감싸는 구조로 구현
-- `useRestaurantContext` 커스텀 훅 분리 (null guard 포함)
-- Context와 props 역할 분리
-  - `RestaurantList` — Context에서 서버 데이터, props로 `selectedCategory`, `onRestaurantClick`
-  - `AddRestaurantModal` — Context에서 `registerRestaurant`, props로 `onClose`
-  - `CategoryFilter` — props로 `category`, `onCategoryChange`
-- `App.jsx` — UI 상태(`selectedCategory`, `clickedRestaurant`, `isAddModalOpen`) 로컬 관리
+- `useRestaurantStore` 생성 — `newRestaurants`, `isLoading`, `error`, `fetchRestaurants`, `registerRestaurant`
+- Context, Provider, `useRestaurantContext`, `useRestaurants` 제거
+- `main.jsx` — Provider 제거
+- `RestaurantList`, `AddRestaurantModal` — selector로 필요한 상태만 구독
+- `App.jsx` — `useEffect`로 초기 데이터 fetch
+- (선택) `useFilterStore` 생성 — `persist` 미들웨어로 카테고리 필터 새로고침 후 유지
 
 ## 📚 학습 내용
 
-### 1. props drilling
+### 1. Zustand 기본 개념
 
-props drilling은 데이터가 필요하지 않은 중간 컴포넌트들이 아래로 전달하기 위해 props를 받아야 하는 상황이다. 컴포넌트 트리가 깊어질수록 불필요한 의존이 쌓여 유지보수가 어려워진다.
+`create`로 store를 만들고, `set`으로 상태를 업데이트하고, 컴포넌트에서 selector로 필요한 값만 꺼낸다.
 
-### 2. Context API의 세 요소
+```js
+const useRestaurantStore = create((set, get) => ({
+  // 상태 — 초기값이 있음
+  restaurants: [],
+  isLoading: false,
 
-| 요소 | 역할 |
-| --- | --- |
-| `createContext()` | 데이터를 담을 통로(Context 객체)를 만든다. 별도 파일에서 한 번만 생성하고 export한다 |
-| `<Provider value={...}>` | 감싼 하위 컴포넌트 전체에 데이터를 공급한다. value가 바뀌면 이 Context를 구독하는 모든 컴포넌트가 리렌더링된다 |
-| `useContext(Context)` | 필요한 컴포넌트에서 중간을 거치지 않고 직접 데이터를 꺼낸다 |
+  // 액션 — 함수, 초기값 없음
+  fetchRestaurants: async () => {
+    const data = await getRestaurants();
+    set({ restaurants: data });
+  },
+}));
 
-### 3. Context를 사용할 기준
+// 컴포넌트에서 — selector로 필요한 것만 구독
+const restaurants = useRestaurantStore((state) => state.restaurants);
+```
 
-처음에는 `RestaurantContext`와 `ModalContext` 두 개를 만들었다. `RestaurantContext`에는 레스토랑 데이터와 카테고리 필터 상태를, `ModalContext`에는 모달 열림/닫힘과 선택된 레스토랑 같은 UI 상태를 올렸다. App의 역할 과부하를 해소하는 것이 목표였다.
+`set`에는 객체를 직접 넘기거나, 이전 상태를 기반으로 업데이트할 때는 함수를 넘긴다.
 
-이후 "이 상태가 바뀌면 어떤 컴포넌트가 영향을 받는가"와 "공통 조상까지의 거리"를 기준으로 다시 검토했다.
+```js
+// 객체 전달 — 단순 교체
+set({ isLoading: true });
 
-| 상황 | 적합한 위치 |
-| --- | --- |
-| 여러 컴포넌트가 같은 데이터를 필요로 함 | Context |
-| 공통 조상이 너무 높아 drilling이 길어짐 | Context |
-| 공통 조상이 바로 위에 있음 | props |
-| 특정 컴포넌트 하나만 사용 | 로컬 state |
+// 함수 전달 — 이전 상태를 참조해야 할 때
+set((state) => ({ restaurants: [...state.restaurants, newOne] }));
+// state가 현재 store 전체 상태. get()으로도 같은 걸 할 수 있지만 이 방식이 더 일반적
+```
 
-이 기준으로 보면 이번 앱에서 Context가 진짜 필요했던 건 `registerRestaurant` 하나다. `newRestaurants`, `isLoading`, `error`는 여러 컴포넌트가 공유하는 서버 데이터라 Context가 적합하고, UI 상태(`clickedRestaurant`, `isAddModalOpen`, `selectedCategory`)는 App 직접 자식에게 props로 전달하면 충분했다.
+`get`은 액션 안에서 현재 상태를 읽어야 할 때 쓴다. 컴포넌트가 아닌 곳에서는 훅을 호출할 수 없어서 별도로 제공된다.
 
-### 4. Provider 위치 — main.jsx vs App.jsx
+```js
+registerRestaurant: async (newRestaurant) => {
+  await addRestaurant(newRestaurant);
+  await get().fetchRestaurants(); // 다른 액션 호출
+},
+```
 
-Provider를 렌더링하는 컴포넌트는 그 Provider의 소비자가 될 수 없다. `useContext`는 자신보다 상위에 있는 Provider를 찾기 때문이다.
+### 2. Context API vs Zustand
 
-| 위치 | 장점 |
-| --- | --- |
-| `main.jsx` | App도 Context 소비 가능, 확장에 유연함 |
-| `App.jsx` return 안 | Provider 스코프가 명확함 |
+|                | Context API                                           | Zustand                          |
+| -------------- | ----------------------------------------------------- | -------------------------------- |
+| Provider       | 필요                                                  | 불필요                           |
+| 리렌더링       | value 전체가 바뀌면 구독 컴포넌트 전부                | selector로 구독한 값이 바뀔 때만 |
+| 상태 위치      | 컴포넌트 트리 안 (`useState`가 실제 상태를 관리)      | 컴포넌트 트리 바깥 (모듈 스코프) |
+| 보일러플레이트 | `createContext` + Provider + `useContext` + 커스텀 훅 | `create` 하나                    |
 
-App이 Context를 소비하지 않는 구조라면 `App.jsx` 안에 두어도 동작하지만, 확장성을 고려해 `main.jsx`에 뒀다. 앱 진입점에서 Provider를 선언적으로 관리하는 것이 역할 분리도 명확하다.
+Context API는 "데이터를 트리에 흘려보내는 통로"다. 상태 자체는 Provider 안의 `useState`가 들고 있고, Context는 그 값을 아래로 전달하는 역할만 한다. 전역 상태 관리 라이브러리가 아니라 React 내장 데이터 전달 메커니즘이다.
 
-> 과거 미션 코드는 Provider를 `App.jsx` 안에 뒀는데, App이 Context를 소비해야 했기 때문에 JSX를 `AppContent`로 별도 분리해야 했다. Provider를 `main.jsx`로 올리면 이 문제가 해소되고 `AppContent`도 불필요해진다.
+Zustand는 상태 저장, 업데이트, 구독을 모두 자체적으로 처리하는 독립적인 상태 컨테이너다.
 
-### 5. styled-components 선언 위치
+### 3. store 안에서 React 훅을 쓸 수 없는 이유
 
-styled-components를 컴포넌트 함수 아래에 선언해도 동작한다. `const`는 호이스팅되지 않지만, 컴포넌트 함수가 실제로 호출(React 렌더링)되는 시점에는 모듈 최상위 코드가 이미 전부 실행된 이후라 아래 있는 styled-components도 초기화된 상태이기 때문이다. 이 특성을 활용해 파일 상단에는 컴포넌트 로직을, 하단에는 styled-components를 배치하면 가독성이 좋아진다.
+React 훅(`useState`, `useEffect`, `useCallback`)은 React 함수 컴포넌트 또는 커스텀 훅 안에서만 호출 가능하다. Zustand의 `create` 콜백은 그냥 일반 JS 함수라 훅을 쓰면 에러가 난다.
 
-### 6. Context API와 컴포넌트 관계 도식화
+이 때문에 구조가 나뉜다.
 
-![Context API 관계 도식화](02-state-management-tools/2.1-ContextAPI/assets/context-diagram.svg)
+| 역할                 | 위치                          |
+| -------------------- | ----------------------------- |
+| 상태 + 액션 로직     | store (무엇을, 어떻게)        |
+| 언제 실행할지 타이밍 | 컴포넌트의 `useEffect` (언제) |
+
+`fetchRestaurants`를 App.jsx에서 `useEffect`로 트리거하는 것도, `useCallback`이 store 액션에 필요 없는 것도 이 구조 때문이다. 컴포넌트 안의 함수는 렌더링마다 새로 만들어지지만, store 액션은 `create`가 실행될 때 딱 한 번 만들어지고 참조가 바뀌지 않는다.
+
+### 4. create가 한 번만 실행되는 이유
+
+JS 모듈 시스템은 같은 파일을 여러 번 `import`해도 처음 한 번만 실행하고 결과를 캐싱한다. `create()`도 앱이 시작될 때 딱 한 번 실행되고, 내부에 상태와 구독자 목록을 담은 객체가 만들어진다. 이후 컴포넌트가 렌더링될 때마다 store가 새로 만들어지는 게 아니라, 같은 객체를 계속 참조한다.
+
+컴포넌트가 `useRestaurantStore((state) => state.xxx)`를 호출하면 "이 값이 바뀌면 나를 리렌더링해달라"고 store에 등록한다. `set()`이 호출되면 store가 등록된 컴포넌트들에게 알리고, selector로 선택한 값이 바뀐 컴포넌트만 리렌더링된다.
+
+store 자체는 컴포넌트 트리 바깥에 있어서 컴포넌트가 마운트/언마운트돼도 상태가 유지된다.
+
+### 5. persist 미들웨어 — 영속화 vs 캐싱
+
+`persist`는 store 상태를 localStorage에 자동으로 저장하고 복원한다. `create`와 상태 정의 사이에 끼어드는 미들웨어 형태다.
+
+```js
+const useFilterStore = create(
+  persist(
+    // create(상태정의) → create(persist(상태정의, 옵션))
+    (set) => ({
+      selectedCategory: ALL_CATEGORY,
+      setSelectedCategory: (category) => set({ selectedCategory: category }),
+    }),
+    { name: "self-paced-react-category" }, // localStorage 키 이름
+  ),
+);
+```
+
+영속화와 캐싱은 다른 개념이다.
+
+|      | 영속화                             | 캐싱                                    |
+| ---- | ---------------------------------- | --------------------------------------- |
+| 목적 | 사용자 설정/선택값 기억 (UX)       | 서버 요청 비용 절감 (성능)              |
+| 예시 | 다크모드, 언어 설정, 카테고리 필터 | API 응답 재사용, 이미지 재다운로드 방지 |
+
+Context API도 localStorage에 직접 저장하는 코드를 짜면 영속화가 가능하다. `persist` 미들웨어는 그 작업을 자동으로 처리해준다.
+
+`persist`의 두 번째 인자 옵션에는 `name`, `storage` 외에 `onRehydrateStorage`도 있다. 앱이 시작될 때 storage에서 값을 복원하는 시점에 실행되는 콜백으로, 복원된 값이 유효한지 검증하는 데 쓴다.
+
+```js
+persist(
+  (set) => ({ ... }),
+  {
+    name: "storage-key",
+    onRehydrateStorage: () => (state) => {
+      // 복원 완료 후 실행. state가 null이면 복원 실패
+      if (!state) return;
+      if (!isValidCategory(state.selectedCategory)) {
+        state.setSelectedCategory(ALL_CATEGORY);
+      }
+    },
+  }
+)
+```
+
+커링 구조(`() => (state) => {}`)인 이유는 바깥 함수가 복원 **시작 전**, 안쪽 함수가 복원 **완료 후**에 실행되기 때문이다. 복원된 `state`는 안쪽 함수에서만 접근할 수 있다.
 
 ## 🤔 고민했던 문제와 해결 과정에서 배운 점
 
-### 1. props drilling 없이 Context를 도입한 이유 — App의 역할 과부하
+### 1. Context → Zustand 마이그레이션 시 코드가 중복되는 건지
 
-코드를 보면서 props drilling을 찾으려 했지만 찾을 수가 없었다. 현재 트리가 얕아서 App의 모든 자식이 App에서 직접 props를 받고 있었고, 중간에 그냥 전달만 하는 컴포넌트가 없었다.
+마이그레이션하면서 `useRestaurants` 훅의 코드를 store에 다시 써야 하는 건지 헷갈렸다. 결론은 중복 작성이 아니라 이동이다. `useRestaurants`에 있던 것들이 각자의 역할에 맞는 위치로 옮겨간 것이다.
 
-대신 다른 문제가 보였다. App.jsx가 상태 3개, 핸들러 6개, 필터 계산 로직까지 전부 들고 있었다. Context API가 props drilling만을 해결하기 위한 도구가 아니라는 걸 알았다. 관심사를 분리해 App을 가볍게 만드는 것도 Context를 도입하는 이유가 될 수 있다. 다만 모든 상태를 Context로 올리는 방식은 Context의 특성을 고려하지 않은 선택이었다. Context는 value가 바뀌면 구독하는 모든 컴포넌트가 리렌더링되기 때문에, UI 상태를 Context에 올리면 관련 없는 컴포넌트까지 불필요하게 리렌더링되는 문제가 생긴다.
+| useRestaurants             | Zustand store                   |
+| -------------------------- | ------------------------------- |
+| `useState([])`             | 초기값 `newRestaurants: []`     |
+| `setNewRestaurants(data)`  | `set({ newRestaurants: data })` |
+| `fetchRestaurants` 함수    | 액션으로 이동                   |
+| `registerRestaurant` 함수  | 액션으로 이동                   |
+| `useEffect(() => fetch())` | App.jsx로 이동                  |
 
-### 2. Context 구독의 리렌더링 문제
+### 2. selectedCategory를 어디서 관리할지
 
-초기 구현에서는 UI 상태(`clickedRestaurant`, `isAddModalOpen`)와 핸들러들을 `ModalContext`에 올렸다. Context value가 바뀌면 구독하는 모든 컴포넌트가 리렌더링된다.
+`selectedCategory`는 원래 App.jsx 로컬 state였다. persist가 필요해지면서 store로 옮겨야 했는데, `useRestaurantStore`에 합칠지 `useFilterStore`로 분리할지 고민했다.
 
-`isAddModalOpen`이 `false → true`로 바뀔 때(모달 열기):
+서버 데이터(레스토랑 목록)와 UI 필터 상태(선택된 카테고리)는 관심사가 다르고, 합치면 persist 범위도 불필요하게 넓어진다. `useFilterStore`를 별도로 분리해 UI 상태만 영속화했다.
 
-| 컴포넌트 | 구독 중인 값 | 리렌더링 필요 여부 |
-| --- | --- | --- |
-| `App` | `isAddModalOpen` | ✓ 필요 (조건부 렌더링) |
-| `Header` | `handleAddModalOpen` | ✗ 불필요 |
-| `RestaurantList` | `handleRestaurantClick` | ✗ 불필요 |
+### 3. 전역 상태가 비대해지는 문제 — 도구가 아니라 기준의 문제
 
-`Header`와 `RestaurantList`는 모달 열림과 관련 없는데도 `ModalContext`를 구독하고 있어 함께 리렌더링됐다. React DevTools의 "Highlight updates when components render" 옵션으로 직접 확인했다.
+읽은 글에서 "팀원마다 전역 상태로 올릴 기준이 달라 결국 전역 상태가 비대해진다"는 얘기가 있었다. 이건 Zustand vs Context의 문제라기보다 팀 컨벤션의 문제다. 어떤 도구를 쓰든 기준이 없으면 전역 상태는 비대해진다.
 
-Context는 value 전체가 바뀌면 구독 컴포넌트 전체가 반응하는 구조라, 상태를 잘게 쪼개거나 구독 범위를 최소화하지 않으면 불필요한 리렌더링이 생긴다.
+| 전역 상태로 올릴 것                      | 로컬/props로 둘 것          |
+| ---------------------------------------- | --------------------------- |
+| 부모-자식 관계 없는 여러 컴포넌트가 공유 | 한 컴포넌트만 씀            |
+| 컴포넌트 트리를 벗어나도 유지돼야 함     | 공통 조상이 가까움          |
+| 서버 데이터, 인증 정보                   | UI 상태 (모달 열림, 선택값) |
 
-### 3. react-refresh 경고와 훅 파일 분리
+### 4. fetchRestaurants를 App.jsx에서 호출한 이유
 
-Context 파일에서 Provider(컴포넌트)와 커스텀 훅(일반 함수)을 함께 export하면 `react-refresh/only-export-components` 경고가 발생한다.
+초기 데이터 fetch를 `RestaurantList` 안 `useEffect`에서 할 수도 있고, `App.jsx`에서 할 수도 있다. co-location 원칙 기준으로는 데이터가 필요한 컴포넌트가 직접 선언하는 게 더 명시적이다.
 
-> **핫 리로드** — 파일을 저장했을 때 페이지 전체를 새로고침하지 않고 변경된 컴포넌트만 교체해 업데이트하는 기능. React Fast Refresh는 컴포넌트 export만 있는 파일에서 핫 리로드를 안정적으로 처리하는데, 일반 함수가 섞이면 판단하지 못해 경고가 발생한다.
+App.jsx에서 호출하는 방식을 선택한 이유는 두 가지다.
 
-`useRestaurantContext.js`를 별도 파일로 분리해 Context 파일은 Provider 컴포넌트만, 훅 파일은 `useContext` 래퍼만 export하는 구조로 해결했다.
+첫째, co-location의 장점이 가장 잘 드러나는 건 컴포넌트를 다른 곳에서 재사용할 수 있을 때다. `RestaurantList`는 이미 `useRestaurantData()`에 결합된 도메인 컴포넌트라 독립적으로 이동하는 상황이 없다.
+
+둘째, React Query는 중복 요청을 자동으로 처리해주지만, 순수 Zustand에서는 중복 fetch를 직접 관리해야 한다. `RestaurantList`에 fetch를 두면 마운트마다 호출되지 않도록 guard 로직을 별도로 추가해야 하는데, App에서 한 번만 호출하면 그 문제를 구조적으로 피할 수 있다.
+
+React Query를 쓴다면 co-location이 더 자연스러운 선택이다.
 
 ## 🛠 리팩토링
 
-### 1. Provider를 main.jsx로 이동
+### 1. 에러 상태 초기화
 
-`main.jsx`에서 Provider를 감싸도록 변경해 App.jsx는 레이아웃 구조에만 집중하도록 했다.
+`fetchRestaurants` 시작 시 `error: null`을 함께 설정하지 않으면, 이전 실패 에러 메시지가 다음 성공 후에도 화면에 남는다.
 
-### 2. createContext(null) + 방어 로직 추가
-
-`createContext(null)`로 초기화하고, 커스텀 훅 안에서 Provider 바깥 사용 시 에러를 던지도록 추가했다.
-
-```jsx
-export function useRestaurantContext() {
-  const context = useContext(RestaurantContext);
-  if (context === null) {
-    throw new Error("useRestaurantContext는 RestaurantProvider 내부에서만 사용할 수 있습니다.");
-  }
-  return context;
-}
+```js
+fetchRestaurants: async () => {
+  set({ isLoading: true, error: null });
+  // ...
+};
 ```
 
-### 3. ModalContext 제거
+### 2. localStorage 키 이름 구체화
 
-초기 구현에서 ModalContext는 App의 역할 과부하를 줄이기 위해 만들었다. 하지만 drilling 기준으로 보면 ModalContext의 모든 상태는 App 직접 자식에게 props로 전달하면 충분했다. 또한 ModalProvider가 내부에서 `useRestaurantContext()`를 호출해 Provider 중첩 순서가 암묵적 제약이 된다는 팀원 리뷰를 받았다. ModalContext 자체를 제거하고 UI 상태를 App 로컬로 되돌리는 방식으로 두 문제를 함께 해소했다.
+`"categoryState"`처럼 일반적인 이름은 다른 앱과 충돌할 수 있다. `"self-paced-react-category"`로 프로젝트를 식별할 수 있게 변경했다.
 
-### 4. RestaurantContext 축소
+### 3. sessionStorage로 전환
 
-초기 RestaurantContext는 `category`, `filteredRestaurants`, `handleSelectChange`까지 포함하고 있었다. 이것들도 App 직접 자식에게 전달하는 값이라 props로 충분했다. 서버 데이터(`newRestaurants`, `registerRestaurant`, `isLoading`, `error`)만 남기고, category는 App 로컬 state로, 필터링 계산은 RestaurantList 내부로 이동했다.
+`useFilterStore`에서 localStorage를 sessionStorage로 변경했다. 카테고리 필터는 브라우저를 닫아도 유지해야 할 설정값이 아니라 현재 탐색 중인 임시 상태이기 때문이다.
+
+`persist`의 기본 storage는 localStorage다. sessionStorage로 바꾸려면 `storage` 옵션에 `createJSONStorage`를 넘긴다. `() => sessionStorage`처럼 함수로 감싸는 이유는 SSR 환경에서 `sessionStorage`가 없을 수 있어서 실제로 사용할 때 꺼내도록 하기 위함이다.
+
+```js
+import { persist, createJSONStorage } from "zustand/middleware";
+
+persist(
+  (set) => ({ ... }),
+  {
+    name: "self-paced-react-category",
+    storage: createJSONStorage(() => sessionStorage),
+  }
+)
+```
+
+### 4. useRestaurantData 커스텀 훅 추출 → 제거
+
+컴포넌트가 `useRestaurantStore`를 직접 import하던 구조를 `useRestaurantData` 훅으로 감쌌다. store 구조가 바뀌어도 컴포넌트는 수정하지 않아도 되고, store에 접근하는 진입점이 한 곳으로 통일된다.
+
+```js
+// 변경 전 — 컴포넌트마다 store를 직접 참조
+const newRestaurants = useRestaurantStore((state) => state.newRestaurants);
+const isLoading = useRestaurantStore((state) => state.isLoading);
+
+// 변경 후 — 훅을 통해 접근
+const { newRestaurants, isLoading } = useRestaurantData();
+```
+
+훅 내부에서는 여전히 각 값을 개별 selector로 구독하고 있어서 리렌더링 최적화는 그대로 유지된다. 컴포넌트에서 구조분해로 받는 것처럼 보이지만, store 전체를 구독하는 것과는 다르다.
+
+그런데 각 컴포넌트가 실제로 사용하는 선택자가 달랐다. `RestaurantList`는 `newRestaurants`, `isLoading`, `error`를 쓰고, `AddRestaurantModal`은 `registerRestaurant`만 쓴다. 같은 선택자 묶음을 반복하는 게 아니라 그냥 모아두는 형태였고, 현재 규모에서는 추상화 레이어가 코드 추적 비용을 높인다고 판단해 다시 제거했다.
 
 ## 과거 코드와 비교
 
 ### 달라진 점
 
-**Provider 위치와 AppContent 분리**
+**커스텀 훅 래퍼 유무**
 
-과거 코드는 Provider를 `main.jsx`에서 감쌌다. App이 Provider 안에 있어서 App에서 바로 Context를 소비할 수 있었고, AppContent 분리가 불필요했다.
+과거 코드는 store selector를 컴포넌트에서 직접 쓰지 않고 `useRestaurantData`, `useRestaurantModal` 커스텀 훅으로 감쌌다. 현재 코드는 컴포넌트에서 store를 직접 참조한다.
 
-현재 코드도 `main.jsx`에 두는 방향으로 리팩토링했다. App.jsx는 레이아웃 구조에 집중하고, Provider는 앱 진입점에서 선언적으로 관리하는 것이 역할 분리가 명확하다.
+컴포넌트가 store 구조를 알 필요 없이 훅만 import하면 되고, store 이름이나 구조가 바뀌어도 컴포넌트는 수정하지 않아도 되기 때문에 과거 방식이 더 나은 접근이라고 판단했다. 현재 방식은 store가 바뀌면 직접 import한 컴포넌트를 전부 찾아서 수정해야 한다.
 
-**훅 파일 위치**
+**Store 분리 기준**
 
-과거 코드는 커스텀 훅을 `src/hooks/` 폴더에 뒀다. 현재 코드는 `src/context/` 안에 뒀다.
+과거 코드는 `useRestaurantStore`(서버 데이터 + 카테고리)와 `useRestaurantModalStore`(모달 UI 상태)로 나눴다. 현재 코드는 `useRestaurantStore`(서버 데이터)와 `useFilterStore`(카테고리), 모달은 App 로컬 state로 분리했다.
 
-`src/hooks/`는 모든 커스텀 훅을 한 곳에서 찾을 수 있다는 장점이 있고, `src/context/`는 Context와 훅을 한 묶음으로 관리해 응집도가 높다는 장점이 있다. Context에 강하게 종속된 훅이라는 점에서 `src/context/`를 유지하기로 했다.
+모달 열림/닫힘은 App 직계 자식에게만 영향을 주는 일시적인 UI 상태라 전역 store에 올릴 이유가 없고, 서버 데이터와 UI 필터 상태를 나누면 관심사 분리가 명확해지기 때문에 현재 방식이 더 나은 구조라고 판단했다.
+
+**sessionStorage vs localStorage**
+
+현재 코드는 카테고리 필터를 localStorage에 저장한다. 과거 코드는 리뷰 피드백을 받고 sessionStorage로 변경했다.
+
+카테고리 필터는 "브라우저를 닫아도 기억해야 하는 설정"이 아니라 "현재 탐색 중인 필터 상태"에 가깝고, sessionStorage는 탭/브라우저를 닫으면 초기화되어 오래된 상태가 쌓이지 않기 때문에 이 경우에는 과거 방식(sessionStorage)이 더 적합하다고 판단했다.
 
 ### 과거 코드에서 배운 점
 
-**`createContext(null)`과 방어 로직**
+**localStorage/sessionStorage에 저장된 값은 신뢰하지 않는다**
 
-과거 코드는 `createContext()`에 초기값을 넣지 않았는데, 리뷰에서 `createContext(null)`로 선언하는 것을 권장한다는 피드백을 받았다.
+서버 데이터는 코드 로직으로만 바뀌지만, localStorage와 sessionStorage는 사용자가 브라우저 개발자 도구에서 직접 값을 수정하거나 이상한 값을 넣을 수 있다. `persist` 미들웨어는 저장/복원 과정의 기술적 오류(JSON 파싱 실패 등)는 처리해주지만, 저장된 값이 앱에서 허용하는 값인지까지는 검증하지 않는다.
 
-`createContext()`에 아무것도 넣지 않으면 Provider로 감싸지 않은 컴포넌트에서 사용해도 조용히 기본값(`undefined`)으로 동작해 문제를 놓칠 수 있다. `null`로 초기화하고 커스텀 훅 안에서 방어 로직을 추가하면 Provider 바깥에서 사용했을 때 명시적인 에러가 발생해 디버깅이 쉬워진다.
+과거 코드는 `onRehydrateStorage` 옵션을 써서 sessionStorage에서 값을 꺼낸 직후 카테고리가 유효한 값인지 확인하고, 아니면 "전체"로 되돌리는 방어 로직을 추가했다.
+
+이번 미션에서는 구현하지 않았다. 카테고리 값이 오염되더라도 필터가 잘못 적용되는 수준이라 사용자 데이터나 보안에 영향이 없기 때문이다. 결제 정보나 인증 상태처럼 오염 시 심각한 문제가 생기는 값이라면 필수로 추가해야 한다.
+
+**sessionStorage vs localStorage 선택 기준**
+
+세션 단위로만 유지되면 충분한 상태는 sessionStorage가 적합하다. localStorage는 탭 간에 공유되고 브라우저 종료 후에도 유지된다. sessionStorage는 탭별로 독립적이고 세션이 끝나면 초기화된다.

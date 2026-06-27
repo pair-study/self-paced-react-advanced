@@ -3,10 +3,10 @@ import { useState } from "react";
 import Modal from "./Modal";
 import styled from "styled-components";
 import { textCaption } from "../../styles/typography";
-import { useRestaurantContext } from "../../context/useRestaurantContext";
+import useRestaurantStore from "../../store/useRestaurantStore";
 
 export default function AddRestaurantModal({ onClose }) {
-  const { registerRestaurant } = useRestaurantContext();
+  const registerRestaurant = useRestaurantStore((state) => state.registerRestaurant);
   const [category, setCategory] = useState("");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -14,7 +14,12 @@ export default function AddRestaurantModal({ onClose }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await registerRestaurant({ id: crypto.randomUUID(), category, name, description });
+      await registerRestaurant({
+        id: crypto.randomUUID(),
+        category,
+        name,
+        description,
+      });
       onClose();
     } catch {
       alert("음식점 추가에 실패했습니다. 다시 시도해주세요.");
