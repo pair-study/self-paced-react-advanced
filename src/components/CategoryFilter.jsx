@@ -1,23 +1,6 @@
 import { ALL_CATEGORY, CATEGORIES } from "../constants/categories.js";
 import styled from "styled-components";
 
-const CategoryFilterSection = styled.section`
-  display: flex;
-  justify-content: space-between;
-  padding: 0 16px;
-  margin-top: 24px;
-`;
-
-const CategorySelect = styled.select`
-  height: 44px;
-  min-width: 125px;
-  border: 1px solid var(--grey-200);
-  border-radius: 8px;
-  background: transparent;
-  font-size: 16px;
-  padding: 8px;
-`;
-
 export default function CategoryFilter({ category, onCategoryChange }) {
   return (
     <CategoryFilterSection>
@@ -38,3 +21,20 @@ export default function CategoryFilter({ category, onCategoryChange }) {
     </CategoryFilterSection>
   );
 }
+
+const CategoryFilterSection = styled.section`
+  display: flex;
+  justify-content: space-between;
+  padding: 0 16px;
+  margin-top: 24px;
+`;
+
+const CategorySelect = styled.select`
+  height: 44px;
+  min-width: 125px;
+  border: 1px solid var(--grey-200);
+  border-radius: 8px;
+  background: transparent;
+  font-size: 16px;
+  padding: 8px;
+`;

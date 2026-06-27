@@ -1,6 +1,22 @@
 import styled from "styled-components";
 import addButton from "../assets/add-button.png";
 
+export default function Header({ onAddButtonClick }) {
+  return (
+    <Gnb>
+      <GnbTitle>점심 뭐 먹지</GnbTitle>
+
+      <GnbButton
+        type="button"
+        aria-label="음식점 추가"
+        onClick={onAddButtonClick}
+      >
+        <img src={addButton} />
+      </GnbButton>
+    </Gnb>
+  );
+}
+
 const Gnb = styled.header`
   display: flex;
   justify-content: space-between;
@@ -32,19 +48,3 @@ const GnbButton = styled.button`
     object-fit: contain;
   }
 `;
-
-export default function Header({ onAddButtonClick }) {
-  return (
-    <Gnb>
-      <GnbTitle>점심 뭐 먹지</GnbTitle>
-
-      <GnbButton
-        type="button"
-        aria-label="음식점 추가"
-        onClick={onAddButtonClick}
-      >
-        <img src={addButton} />
-      </GnbButton>
-    </Gnb>
-  );
-}

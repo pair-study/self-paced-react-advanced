@@ -1,5 +1,44 @@
 import { CATEGORY_IMAGES } from "../constants/categoryImages.js";
 import styled from "styled-components";
+import { useRestaurantsContext } from "../context/useRestaurantsContext.js";
+import { filterRestaurants } from "../utils/filterRestaurants.js";
+
+export default function RestaurantList({
+  selectedCategory,
+  onRestaurantClick,
+}) {
+  const { restaurants, isLoading, error } = useRestaurantsContext();
+  const filteredRestaurants = filterRestaurants(restaurants, selectedCategory);
+
+  return (
+    <>
+      {isLoading && <p>불러오는 중...</p>}
+      {error && <p>{error}</p>}
+      <List>
+        {filteredRestaurants.map((restaurant) => {
+          return (
+            <Restaurant key={restaurant.id}>
+              <Button onClick={() => onRestaurantClick(restaurant)}>
+                <Category>
+                  <img
+                    src={CATEGORY_IMAGES[restaurant.category]}
+                    alt={restaurant.category}
+                  />
+                </Category>
+                <Info>
+                  <RestaurantName>{restaurant.name}</RestaurantName>
+                  <RestaurantDescription>
+                    {restaurant.description}
+                  </RestaurantDescription>
+                </Info>
+              </Button>
+            </Restaurant>
+          );
+        })}
+      </List>
+    </>
+  );
+}
 
 const List = styled.ul`
   padding: 0 16px;
@@ -63,28 +102,3 @@ const RestaurantDescription = styled.p`
   line-height: 24px;
   font-weight: 400;
 `;
-
-export default function RestaurantList({ restaurants, onRestaurantClick }) {
-  return (
-    <List>
-      {restaurants.map((restaurant) => {
-        return (
-          <Restaurant key={restaurant.id}>
-            <Button onClick={() => onRestaurantClick(restaurant)}>
-              <Category>
-                <img
-                  src={CATEGORY_IMAGES[restaurant.category]}
-                  alt={restaurant.category}
-                />
-              </Category>
-              <Info>
-                <RestaurantName>{restaurant.name}</RestaurantName>
-                <RestaurantDescription>{restaurant.description}</RestaurantDescription>
-              </Info>
-            </Button>
-          </Restaurant>
-        );
-      })}
-    </List>
-  );
-}
