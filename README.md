@@ -234,5 +234,72 @@ Zustand와 TanStack Query는 이후 미션(Step2-2, Step2-3)에서 직접 적용
 
 ### 공통으로 어려웠던 점
 
+Context API에서 Zustand로 마이그레이션할 때 기존 파일(`useRestaurants`, Context, Provider)을 어떻게 재배치할지 판단하는 것이 어려웠다. 중복 작성이 아니라 역할에 맞는 위치로 이동하는 것임을 파악하는 과정이 필요했다.
+
+`useEffect`를 store 안에서 쓸 수 없어 fetch 타이밍 제어를 어느 컴포넌트에 둘지도 공통으로 고민한 지점이었다.
+
 ### 서로 다르게 접근한 부분
 
+#### 1. Store 구조 — 단일 store vs 분리
+
+**hippo — useRestaurantStore 하나, partialize로 persist 범위 제어**
+
+```js
+const useRestaurantStore = create(
+  persist(
+    (set, get) => ({
+      restaurants: [],
+      selectedCategory: "전체",
+      // ...
+    }),
+    {
+      name: "restaurant-storage",
+      partialize: (state) => ({ selectedCategory: state.selectedCategory }),
+    }
+  )
+);
+```
+
+**cactus — 서버 데이터와 UI 상태를 별도 store로 분리**
+
+- `useRestaurantStore`: 서버 데이터(`newRestaurants`, `isLoading`, `error`, 액션)
+- `useFilterStore`: 카테고리 필터 상태, sessionStorage persist 적용
+
+단일 store + `partialize`는 파일 수가 적고 한 곳에서 전체 상태를 파악할 수 있다. store 분리는 관심사가 명확하지만 파일과 import가 늘어난다. 현재 규모에서는 두 방식 모두 유효하다.
+
+#### 2. fetchRestaurants 호출 위치 — co-location vs App 집중
+
+**hippo — 데이터가 필요한 RestaurantList에서 직접 호출**
+
+```js
+// RestaurantList.jsx
+const fetchRestaurants = useRestaurantStore((state) => state.fetchRestaurants);
+
+useEffect(() => {
+  fetchRestaurants();
+}, [fetchRestaurants]);
+```
+
+**cactus — App.jsx에서 한 번 호출**
+
+```js
+// App.jsx
+const fetchRestaurants = useRestaurantStore((state) => state.fetchRestaurants);
+
+useEffect(() => {
+  fetchRestaurants();
+}, [fetchRestaurants]);
+```
+
+- co-location은 컴포넌트가 자신의 데이터 의존성을 직접 선언해 명시적이지만, 순수 Zustand에서는 마운트마다 호출되지 않도록 guard 로직을 별도로 관리해야 한다.
+- App에서 한 번 호출하면 타이밍 제어가 단순해지지만 `RestaurantList`의 데이터 의존성이 코드에서 보이지 않는다.
+
+React Query를 도입하면 중복 요청이 자동으로 처리되므로 co-location이 더 자연스러운 선택이 된다. 다음 미션에서 React Query를 써보고 다시 판단하기로 했다.
+
+### 기술 선택과 트레이드오프
+
+Context API는 value 전체가 바뀌면 구독하는 모든 컴포넌트가 리렌더링된다. 상태를 잘게 쪼개거나 메모이제이션하지 않으면 불필요한 리렌더링이 발생하는 구조다.
+
+Zustand는 selector로 구독한 값이 바뀔 때만 리렌더링된다. `restaurants`가 바뀌어도 `addRestaurant` 액션만 구독하는 컴포넌트는 리렌더링되지 않는다. Provider 없이 어디서든 import해서 사용할 수 있어 설정도 간단하다.
+
+다만 이번 미션에서 Zustand store에 올린 서버 상태(`newRestaurants`, `isLoading`, `error`)는 Zustand가 직접 처리해주지 않는 영역이다. fetching, caching, 재시도를 직접 구현해야 했다. 서버 상태 관리에는 TanStack Query가 더 적합한 도구다.
