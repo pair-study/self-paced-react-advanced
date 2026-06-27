@@ -1,32 +1,19 @@
-import { createContext, useState } from "react";
+import { createContext } from "react";
 import { useRestaurants } from "../hooks/useRestaurants";
-import { ALL_CATEGORY } from "../constants/categories";
 
 export const RestaurantContext = createContext(null);
 
 export function RestaurantProvider({ children }) {
   const { newRestaurants, registerRestaurant, error, isLoading } =
     useRestaurants();
-  const [category, setCategory] = useState(ALL_CATEGORY);
-
-  const filteredRestaurants =
-    category === ALL_CATEGORY
-      ? newRestaurants
-      : newRestaurants.filter((r) => r.category === category);
-
-  const handleSelectChange = (e) => {
-    setCategory(e.target.value);
-  };
 
   return (
     <RestaurantContext.Provider
       value={{
+        newRestaurants,
         registerRestaurant,
         error,
         isLoading,
-        category,
-        filteredRestaurants,
-        handleSelectChange,
       }}
     >
       {children}

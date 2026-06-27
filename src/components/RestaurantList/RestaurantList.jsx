@@ -2,6 +2,7 @@ import { CATEGORY_IMAGES } from "../../constants/categoryImages";
 import styled from "styled-components";
 import { textSubtitle, textBody } from "../../styles/typography";
 import { useRestaurantContext } from "../../context/useRestaurantContext";
+import { ALL_CATEGORY } from "../../constants/categories";
 
 const ListContainer = styled.section`
   display: flex;
@@ -70,10 +71,17 @@ const RestaurantDescription = styled.p`
   ${textBody}
 `;
 
-export default function RestaurantList({ onRestaurantClick }) {
-  const { filteredRestaurants } = useRestaurantContext();
+export default function RestaurantList({ selectedCategory, onRestaurantClick }) {
+  const { newRestaurants, isLoading, error } = useRestaurantContext();
+  const filteredRestaurants =
+    selectedCategory === ALL_CATEGORY
+      ? newRestaurants
+      : newRestaurants.filter((r) => r.category === selectedCategory);
+
   return (
     <ListContainer>
+      {isLoading && <p>로딩중입니다.</p>}
+      {error && <p>{error}</p>}
       <RestaurantUl>
         {filteredRestaurants.map((restaurant) => (
           <Restaurant key={restaurant.id}>

@@ -5,13 +5,14 @@ import CategoryFilter from "./components/CategoryFilter/CategoryFilter";
 import RestaurantList from "./components/RestaurantList/RestaurantList";
 import RestaurantDetailModal from "./components/Modal/RestaurantDetailModal";
 import AddRestaurantModal from "./components/Modal/AddRestaurantModal";
-import { useRestaurantContext } from "./context/useRestaurantContext";
+import { ALL_CATEGORY } from "./constants/categories";
 
 export default function App() {
-  const { error, isLoading } = useRestaurantContext();
+  const [selectedCategory, setSelectedCategory] = useState(ALL_CATEGORY);
   const [clickedRestaurant, setClickedRestaurant] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
+  const handleCategoryChange = (e) => setSelectedCategory(e.target.value);
   const handleRestaurantClick = (restaurant) => setClickedRestaurant(restaurant);
   const handleDetailModalClose = () => setClickedRestaurant(null);
   const handleAddModalOpen = () => setIsAddModalOpen(true);
@@ -21,10 +22,14 @@ export default function App() {
     <>
       <Header onAddModalOpen={handleAddModalOpen} />
       <main>
-        {isLoading && <p>로딩중입니다.</p>}
-        {error && <p>{error}</p>}
-        <CategoryFilter />
-        <RestaurantList onRestaurantClick={handleRestaurantClick} />
+        <CategoryFilter
+          category={selectedCategory}
+          onCategoryChange={handleCategoryChange}
+        />
+        <RestaurantList
+          selectedCategory={selectedCategory}
+          onRestaurantClick={handleRestaurantClick}
+        />
       </main>
       <aside>
         {clickedRestaurant && (
