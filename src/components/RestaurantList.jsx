@@ -1,14 +1,13 @@
-import { useContext } from "react";
 import { CATEGORY_IMAGES } from "../constants/categoryImages.js";
 import styled from "styled-components";
-import { RestaurantsContext } from "../context/RestaurantsContext.jsx";
+import { useRestaurantsContext } from "../context/useRestaurantsContext.js";
 import { filterRestaurants } from "../utils/filterRestaurants.js";
 
 export default function RestaurantList({
   selectedCategory,
   onRestaurantClick,
 }) {
-  const { restaurants, isLoading, error } = useContext(RestaurantsContext);
+  const { restaurants, isLoading, error } = useRestaurantsContext();
   const filteredRestaurants = filterRestaurants(restaurants, selectedCategory);
 
   return (
