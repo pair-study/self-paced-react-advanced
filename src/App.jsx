@@ -5,7 +5,7 @@ import CategoryFilter from "./components/CategoryFilter/CategoryFilter";
 import RestaurantList from "./components/RestaurantList/RestaurantList";
 import RestaurantDetailModal from "./components/Modal/RestaurantDetailModal";
 import AddRestaurantModal from "./components/Modal/AddRestaurantModal";
-import { useRestaurantData } from "./hooks/useRestaurantData";
+import useRestaurantStore from "./store/useRestaurantStore";
 import useFilterStore from "./store/useFilterStore";
 
 export default function App() {
@@ -23,7 +23,7 @@ export default function App() {
   const handleAddModalOpen = () => setIsAddModalOpen(true);
   const handleAddModalClose = () => setIsAddModalOpen(false);
 
-  const { fetchRestaurants } = useRestaurantData();
+  const fetchRestaurants = useRestaurantStore((state) => state.fetchRestaurants);
   useEffect(() => {
     fetchRestaurants();
   }, [fetchRestaurants]);
