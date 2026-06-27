@@ -3,12 +3,10 @@ import { useState } from "react";
 import Modal from "./Modal";
 import styled from "styled-components";
 import { textCaption } from "../../styles/typography";
-import useRestaurantStore from "../../store/useRestaurantStore";
+import { useRestaurantData } from "../../hooks/useRestaurantData";
 
 export default function AddRestaurantModal({ onClose }) {
-  const registerRestaurant = useRestaurantStore(
-    (state) => state.registerRestaurant,
-  );
+  const { registerRestaurant } = useRestaurantData();
   const [category, setCategory] = useState("");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");

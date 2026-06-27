@@ -1,16 +1,14 @@
 import { CATEGORY_IMAGES } from "../../constants/categoryImages";
 import styled from "styled-components";
 import { textSubtitle, textBody } from "../../styles/typography";
-import useRestaurantStore from "../../store/useRestaurantStore";
+import { useRestaurantData } from "../../hooks/useRestaurantData";
 import { ALL_CATEGORY } from "../../constants/categories";
 
 export default function RestaurantList({
   selectedCategory,
   onRestaurantClick,
 }) {
-  const newRestaurants = useRestaurantStore((state) => state.newRestaurants);
-  const isLoading = useRestaurantStore((state) => state.isLoading);
-  const error = useRestaurantStore((state) => state.error);
+  const { newRestaurants, isLoading, error } = useRestaurantData();
 
   const filteredRestaurants =
     selectedCategory === ALL_CATEGORY
