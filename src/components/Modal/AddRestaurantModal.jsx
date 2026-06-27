@@ -3,6 +3,84 @@ import { useState } from "react";
 import Modal from "./Modal";
 import styled from "styled-components";
 import { textCaption } from "../../styles/typography";
+import { useRestaurantContext } from "../../context/useRestaurantContext";
+
+export default function AddRestaurantModal({ onClose }) {
+  const { registerRestaurant } = useRestaurantContext();
+  const [category, setCategory] = useState("");
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await registerRestaurant({ id: crypto.randomUUID(), category, name, description });
+      onClose();
+    } catch {
+      alert("음식점 추가에 실패했습니다. 다시 시도해주세요.");
+    }
+  };
+
+  return (
+    <Modal title="새로운 음식점" onClose={onClose}>
+      <form onSubmit={handleSubmit}>
+        {/* 카테고리 */}
+        <FormItem $required>
+          <label htmlFor="category">카테고리</label>
+          <select
+            name="category"
+            id="category"
+            value={category}
+            onChange={(e) => {
+              setCategory(e.target.value);
+            }}
+            required
+          >
+            <option value="">선택해 주세요</option>
+            {CATEGORIES.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
+        </FormItem>
+        {/* 음식점 이름 */}
+        <FormItem $required>
+          <label htmlFor="name">이름</label>
+          <input
+            type="text"
+            name="name"
+            id="name"
+            required
+            value={name}
+            onChange={(e) => {
+              setName(e.target.value);
+            }}
+          />
+        </FormItem>
+        {/* 설명 */}
+        <FormItem>
+          <label htmlFor="description">설명</label>
+          <textarea
+            name="description"
+            id="description"
+            cols="30"
+            rows="5"
+            value={description}
+            onChange={(e) => {
+              setDescription(e.target.value);
+            }}
+          ></textarea>
+          <FormHelpText>메뉴 등 추가 정보를 입력해 주세요.</FormHelpText>
+        </FormItem>
+        {/* 추가 버튼 */}
+        <ModalButtonContainer>
+          <Button $primary>추가하기</Button>
+        </ModalButtonContainer>
+      </form>
+    </Modal>
+  );
+}
 
 const FormItem = styled.div`
   display: flex;
@@ -74,74 +152,3 @@ const Button = styled.button`
 
   ${textCaption}
 `;
-
-export default function AddRestaurantModal({ onSubmit, onClose }) {
-  const [category, setCategory] = useState("");
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSubmit({ id: crypto.randomUUID(), category, name, description });
-  };
-
-  return (
-    <Modal title="새로운 음식점" onClose={onClose}>
-      <form onSubmit={handleSubmit}>
-        {/* 카테고리 */}
-        <FormItem $required>
-          <label htmlFor="category">카테고리</label>
-          <select
-            name="category"
-            id="category"
-            value={category}
-            onChange={(e) => {
-              setCategory(e.target.value);
-            }}
-            required
-          >
-            <option value="">선택해 주세요</option>
-            {CATEGORIES.map((category) => (
-              <option key={category} value={category}>
-                {category}
-              </option>
-            ))}
-          </select>
-        </FormItem>
-        {/* 음식점 이름 */}
-        <FormItem $required>
-          <label htmlFor="name">이름</label>
-          <input
-            type="text"
-            name="name"
-            id="name"
-            required
-            value={name}
-            onChange={(e) => {
-              setName(e.target.value);
-            }}
-          />
-        </FormItem>
-        {/* 설명 */}
-        <FormItem>
-          <label htmlFor="description">설명</label>
-          <textarea
-            name="description"
-            id="description"
-            cols="30"
-            rows="5"
-            value={description}
-            onChange={(e) => {
-              setDescription(e.target.value);
-            }}
-          ></textarea>
-          <FormHelpText>메뉴 등 추가 정보를 입력해 주세요.</FormHelpText>
-        </FormItem>
-        {/* 추가 버튼 */}
-        <ModalButtonContainer>
-          <Button $primary>추가하기</Button>
-        </ModalButtonContainer>
-      </form>
-    </Modal>
-  );
-}

@@ -1,6 +1,43 @@
 import { CATEGORY_IMAGES } from "../../constants/categoryImages";
 import styled from "styled-components";
 import { textSubtitle, textBody } from "../../styles/typography";
+import { useRestaurantContext } from "../../context/useRestaurantContext";
+import { ALL_CATEGORY } from "../../constants/categories";
+
+export default function RestaurantList({ selectedCategory, onRestaurantClick }) {
+  const { newRestaurants, isLoading, error } = useRestaurantContext();
+  const filteredRestaurants =
+    selectedCategory === ALL_CATEGORY
+      ? newRestaurants
+      : newRestaurants.filter((r) => r.category === selectedCategory);
+
+  return (
+    <ListContainer>
+      {isLoading && <p>로딩중입니다.</p>}
+      {error && <p>{error}</p>}
+      <RestaurantUl>
+        {filteredRestaurants.map((restaurant) => (
+          <Restaurant key={restaurant.id}>
+            <RestaurantButton onClick={() => onRestaurantClick(restaurant)}>
+              <RestaurantCategory>
+                <CategoryIcon
+                  src={CATEGORY_IMAGES[restaurant.category]}
+                  alt={restaurant.category}
+                />
+              </RestaurantCategory>
+              <RestaurantInfo>
+                <RestaurantName>{restaurant.name}</RestaurantName>
+                <RestaurantDescription>
+                  {restaurant.description}
+                </RestaurantDescription>
+              </RestaurantInfo>
+            </RestaurantButton>
+          </Restaurant>
+        ))}
+      </RestaurantUl>
+    </ListContainer>
+  );
+}
 
 const ListContainer = styled.section`
   display: flex;
@@ -68,30 +105,3 @@ const RestaurantDescription = styled.p`
   -webkit-box-orient: vertical;
   ${textBody}
 `;
-
-export default function RestaurantList({ restaurants, onRestaurantClick }) {
-  return (
-    <ListContainer>
-      <RestaurantUl>
-        {restaurants.map((restaurant) => (
-          <Restaurant key={restaurant.id}>
-            <RestaurantButton onClick={() => onRestaurantClick(restaurant)}>
-              <RestaurantCategory>
-                <CategoryIcon
-                  src={CATEGORY_IMAGES[restaurant.category]}
-                  alt={restaurant.category}
-                />
-              </RestaurantCategory>
-              <RestaurantInfo>
-                <RestaurantName>{restaurant.name}</RestaurantName>
-                <RestaurantDescription>
-                  {restaurant.description}
-                </RestaurantDescription>
-              </RestaurantInfo>
-            </RestaurantButton>
-          </Restaurant>
-        ))}
-      </RestaurantUl>
-    </ListContainer>
-  );
-}

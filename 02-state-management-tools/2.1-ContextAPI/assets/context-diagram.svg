@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="520" viewBox="0 0 720 520" font-family="Segoe UI, Arial, sans-serif">
+
+  <!-- Background -->
+  <rect width="720" height="520" fill="#f8f9fa" rx="12"/>
+
+  <!-- Title -->
+  <text x="360" y="40" text-anchor="middle" font-size="18" font-weight="bold" fill="#1a1a2e">Context API — Provider와 Consumer의 관계</text>
+
+  <!-- createContext box -->
+  <rect x="270" y="65" width="180" height="44" rx="8" fill="#e8f4fd" stroke="#4a9eda" stroke-width="1.5"/>
+  <text x="360" y="83" text-anchor="middle" font-size="13" font-weight="bold" fill="#1a6fa8">createContext()</text>
+  <text x="360" y="100" text-anchor="middle" font-size="11" fill="#1a6fa8">통로(Context 객체) 생성</text>
+
+  <!-- Arrow down to Provider -->
+  <line x1="360" y1="109" x2="360" y2="130" stroke="#4a9eda" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrow-blue)"/>
+
+  <!-- Provider outer box -->
+  <rect x="60" y="130" width="600" height="330" rx="12" fill="#fff8e1" stroke="#f0a500" stroke-width="2"/>
+  <text x="120" y="158" font-size="13" font-weight="bold" fill="#c47c00">Context.Provider</text>
+  <text x="120" y="175" font-size="11" fill="#c47c00">value={{ data, handler }}  →  하위 컴포넌트 전체에 공급</text>
+
+  <!-- Component A (직접 소비) -->
+  <rect x="90" y="195" width="175" height="90" rx="8" fill="#e8f5e9" stroke="#43a047" stroke-width="1.5"/>
+  <text x="177" y="218" text-anchor="middle" font-size="13" font-weight="bold" fill="#2e7d32">Component A</text>
+  <rect x="110" y="228" width="135" height="44" rx="6" fill="#c8e6c9" stroke="#43a047" stroke-width="1"/>
+  <text x="177" y="246" text-anchor="middle" font-size="11" fill="#1b5e20">useContext(Context)</text>
+  <text x="177" y="262" text-anchor="middle" font-size="11" fill="#1b5e20">→ data 사용</text>
+
+  <!-- Component B (중간, 소비 안함) -->
+  <rect x="305" y="195" width="175" height="90" rx="8" fill="#fce4ec" stroke="#e53935" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="392" y="218" text-anchor="middle" font-size="13" font-weight="bold" fill="#b71c1c">Component B</text>
+  <text x="392" y="245" text-anchor="middle" font-size="12" fill="#b71c1c">props 전달 없음</text>
+  <text x="392" y="263" text-anchor="middle" font-size="11" fill="#b71c1c">(Context 미사용)</text>
+
+  <!-- Component C (중간, 소비 안함) -->
+  <rect x="520" y="195" width="115" height="90" rx="8" fill="#fce4ec" stroke="#e53935" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="577" y="218" text-anchor="middle" font-size="13" font-weight="bold" fill="#b71c1c">Component C</text>
+  <text x="577" y="245" text-anchor="middle" font-size="12" fill="#b71c1c">props 없음</text>
+  <text x="577" y="263" text-anchor="middle" font-size="11" fill="#b71c1c">(중간 컴포넌트)</text>
+
+  <!-- Arrow B to D -->
+  <line x1="392" y1="285" x2="392" y2="310" stroke="#999" stroke-width="1.5" marker-end="url(#arrow-grey)"/>
+
+  <!-- Arrow C to E -->
+  <line x1="577" y1="285" x2="577" y2="310" stroke="#999" stroke-width="1.5" marker-end="url(#arrow-grey)"/>
+
+  <!-- Component D (깊은 자식, 소비) -->
+  <rect x="285" y="310" width="215" height="90" rx="8" fill="#e8f5e9" stroke="#43a047" stroke-width="1.5"/>
+  <text x="392" y="333" text-anchor="middle" font-size="13" font-weight="bold" fill="#2e7d32">Component D</text>
+  <rect x="305" y="343" width="175" height="44" rx="6" fill="#c8e6c9" stroke="#43a047" stroke-width="1"/>
+  <text x="392" y="361" text-anchor="middle" font-size="11" fill="#1b5e20">useContext(Context)</text>
+  <text x="392" y="377" text-anchor="middle" font-size="11" fill="#1b5e20">→ handler 사용</text>
+
+  <!-- Component E (깊은 자식, 소비) -->
+  <rect x="510" y="310" width="135" height="90" rx="8" fill="#e8f5e9" stroke="#43a047" stroke-width="1.5"/>
+  <text x="577" y="333" text-anchor="middle" font-size="13" font-weight="bold" fill="#2e7d32">Component E</text>
+  <rect x="520" y="343" width="115" height="44" rx="6" fill="#c8e6c9" stroke="#43a047" stroke-width="1"/>
+  <text x="577" y="361" text-anchor="middle" font-size="11" fill="#1b5e20">useContext(Context)</text>
+  <text x="577" y="377" text-anchor="middle" font-size="11" fill="#1b5e20">→ data 사용</text>
+
+  <!-- Legend -->
+  <rect x="90" y="430" width="560" height="18" rx="4" fill="none"/>
+  <rect x="90" y="430" width="14" height="14" rx="3" fill="#e8f5e9" stroke="#43a047" stroke-width="1.5"/>
+  <text x="110" y="442" font-size="11" fill="#2e7d32">Context를 직접 소비하는 컴포넌트 (useContext 사용)</text>
+  <rect x="360" y="430" width="14" height="14" rx="3" fill="#fce4ec" stroke="#e53935" stroke-width="1.5" stroke-dasharray="4,2"/>
+  <text x="380" y="442" font-size="11" fill="#b71c1c">중간 컴포넌트 (props 전달 불필요)</text>
+
+  <!-- Arrowhead markers -->
+  <defs>
+    <marker id="arrow-blue" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#4a9eda"/>
+    </marker>
+    <marker id="arrow-grey" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#999"/>
+    </marker>
+  </defs>
+
+</svg>

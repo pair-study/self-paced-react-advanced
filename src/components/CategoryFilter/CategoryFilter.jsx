@@ -2,6 +2,26 @@ import { FILTER_OPTIONS } from "../../constants/categories";
 import styled from "styled-components";
 import { textBody } from "../../styles/typography";
 
+export default function CategoryFilter({ category, onCategoryChange }) {
+  return (
+    <FilterContainer>
+      <FilterSelect
+        name="category"
+        id="category-filter"
+        aria-label="음식점 카테고리 필터"
+        value={category}
+        onChange={onCategoryChange}
+      >
+        {FILTER_OPTIONS.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </FilterSelect>
+    </FilterContainer>
+  );
+}
+
 const FilterContainer = styled.section`
   display: flex;
   justify-content: space-between;
@@ -18,23 +38,3 @@ const FilterSelect = styled.select`
   ${textBody}
   padding: 8px;
 `;
-
-export default function CategoryFilter({ category, onChangeCategory }) {
-  return (
-    <FilterContainer>
-      <FilterSelect
-        name="category"
-        id="category-filter"
-        aria-label="음식점 카테고리 필터"
-        value={category}
-        onChange={onChangeCategory}
-      >
-        {FILTER_OPTIONS.map((option) => (
-          <option key={option} value={option}>
-            {option}
-          </option>
-        ))}
-      </FilterSelect>
-    </FilterContainer>
-  );
-}
