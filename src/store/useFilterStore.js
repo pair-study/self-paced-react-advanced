@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
 import { ALL_CATEGORY } from "../constants/categories";
 
 const useFilterStore = create(
@@ -8,7 +8,10 @@ const useFilterStore = create(
       selectedCategory: ALL_CATEGORY,
       setSelectedCategory: (category) => set({ selectedCategory: category }),
     }),
-    { name: "self-paced-react-category" },
+    {
+      name: "self-paced-react-category",
+      storage: createJSONStorage(() => sessionStorage),
+    },
   ),
 );
 
