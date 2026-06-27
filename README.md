@@ -4,13 +4,13 @@
 |---|---|---|
 | Step1 | [cactus-adv-1](https://github.com/pair-study/self-paced-react-advanced/tree/cactus-adv-1) , [PR #2](https://github.com/pair-study/self-paced-react-advanced/pull/2) | [hippo-adv-1](https://github.com/pair-study/self-paced-react-advanced/tree/hippo-adv-1) , [PR #1](https://github.com/pair-study/self-paced-react-advanced/pull/1) |
 | Step2-1 | [cactus-adv-2.1](https://github.com/pair-study/self-paced-react-advanced/tree/cactus-adv-2.1) , [PR #4](https://github.com/pair-study/self-paced-react-advanced/pull/4) | [hippo-adv-2.1](https://github.com/pair-study/self-paced-react-advanced/tree/hippo-adv-2.1) , [PR #3](https://github.com/pair-study/self-paced-react-advanced/pull/3) |
-| Step2-2 |  |  |
+| Step2-2 | [cactus-adv-2.2](https://github.com/pair-study/self-paced-react-advanced/tree/cactus-adv-2.2) , [PR #6](https://github.com/pair-study/self-paced-react-advanced/pull/6) | [hippo-adv-2.2](https://github.com/pair-study/self-paced-react-advanced/tree/hippo-adv-2.2) , [PR #5](https://github.com/pair-study/self-paced-react-advanced/pull/5) |
 | Step2-3 |  |  |
 
 ---
 
 ## Step1
-- styled-component 적용
+- styled-component 적용하기
 
 ### 미션 개요
 - 핵심 키워드: `styled-component`
@@ -224,14 +224,13 @@ Zustand와 TanStack Query는 이후 미션(Step2-2, Step2-3)에서 직접 적용
   ---
 
 ## Step2-2
-- 
-- 
+- Zustand 적용하기
 
 ### 미션 개요
-- 핵심 키워드:
+- 핵심 키워드: `Zustand`
 
 ### 스터디 세션 기록
-> 날짜: 
+> 날짜: 2026.06.24 ~ 2026.06.28
 
 ### 공통으로 어려웠던 점
 
