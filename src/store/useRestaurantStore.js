@@ -7,7 +7,7 @@ const useRestaurantStore = create((set, get) => ({
   isLoading: false,
 
   fetchRestaurants: async () => {
-    set({ isLoading: true });
+    set({ isLoading: true, error: null });
     try {
       const data = await getRestaurants();
       set({ newRestaurants: data });

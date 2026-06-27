@@ -8,7 +8,7 @@ const useFilterStore = create(
       selectedCategory: ALL_CATEGORY,
       setSelectedCategory: (category) => set({ selectedCategory: category }),
     }),
-    { name: "categoryState" },
+    { name: "self-paced-react-category" },
   ),
 );
 
