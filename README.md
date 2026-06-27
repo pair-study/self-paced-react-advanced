@@ -3,7 +3,7 @@
 | | 강예령 | 남유성 |
 |---|---|---|
 | Step1 | [cactus-adv-1](https://github.com/pair-study/self-paced-react-advanced/tree/cactus-adv-1) , [PR #2](https://github.com/pair-study/self-paced-react-advanced/pull/2) | [hippo-adv-1](https://github.com/pair-study/self-paced-react-advanced/tree/hippo-adv-1) , [PR #1](https://github.com/pair-study/self-paced-react-advanced/pull/1) |
-| Step2-1 |  | [hippo-adv-2.1](https://github.com/pair-study/self-paced-react-advanced/tree/hippo-adv-2.1) , [PR #3](https://github.com/pair-study/self-paced-react-advanced/pull/3) |
+| Step2-1 | [cactus-adv-2.1](https://github.com/pair-study/self-paced-react-advanced/tree/cactus-adv-2.1) , [PR #4](https://github.com/pair-study/self-paced-react-advanced/pull/4) | [hippo-adv-2.1](https://github.com/pair-study/self-paced-react-advanced/tree/hippo-adv-2.1) , [PR #3](https://github.com/pair-study/self-paced-react-advanced/pull/3) |
 | Step2-2 |  |  |
 | Step2-3 |  |  |
 
@@ -133,14 +133,13 @@ TailwindCSS는 미리 정의된 유틸리티 클래스를 조합하는 방식으
 ---
 
 ## Step2-1
-- 
-- 
+- Context API 적용하기
 
 ### 미션 개요
-- 핵심 키워드: 
+- 핵심 키워드: `Context API`
 
 ### 스터디 세션 기록
-> 날짜: 
+> 날짜: 2026.06.25 ~ 2026.06.27
 
 ### 공통으로 어려웠던 점
 
@@ -148,12 +147,8 @@ TailwindCSS는 미리 정의된 유틸리티 클래스를 조합하는 방식으
 ### 서로 다르게 접근한 부분
 
 
-### 인상 깊었던 코드
+### 기술 선택과 트레이드오프
 
-**강예령**
-
-
-**남유성**
 
 
   ---
