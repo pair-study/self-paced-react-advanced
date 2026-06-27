@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
 import { getRestaurants, createRestaurant } from "../api.js";
 import { ALL_CATEGORY } from "../constants/categories.js";
 
@@ -32,6 +32,7 @@ const useRestaurantStore = create(
     }),
     {
       name: "restaurant-storage",
+      storage: createJSONStorage(() => sessionStorage),
       partialize: (state) => ({ selectedCategory: state.selectedCategory }),
     },
   ),
