@@ -3,7 +3,7 @@ import { useState } from "react";
 import Modal from "./Modal";
 import styled from "styled-components";
 import { textCaption } from "../../styles/typography";
-import { useModalContext } from "../../context/useModalContext";
+import { useRestaurantContext } from "../../context/useRestaurantContext";
 
 const FormItem = styled.div`
   display: flex;
@@ -76,15 +76,20 @@ const Button = styled.button`
   ${textCaption}
 `;
 
-export default function AddRestaurantModal() {
-  const { handleFormSubmit: onSubmit, handleAddModalClose: onClose } = useModalContext();
+export default function AddRestaurantModal({ onClose }) {
+  const { registerRestaurant } = useRestaurantContext();
   const [category, setCategory] = useState("");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSubmit({ id: crypto.randomUUID(), category, name, description });
+    try {
+      await registerRestaurant({ id: crypto.randomUUID(), category, name, description });
+      onClose();
+    } catch {
+      alert("음식점 추가에 실패했습니다. 다시 시도해주세요.");
+    }
   };
 
   return (
