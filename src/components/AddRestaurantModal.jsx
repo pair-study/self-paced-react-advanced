@@ -2,13 +2,14 @@ import { useState } from "react";
 import Modal from "./Modal.jsx";
 import { CATEGORIES } from "../constants/categories.js";
 import styled from "styled-components";
-import { useRestaurantsContext } from "../context/useRestaurantsContext.js";
+import useRestaurantStore from "../store/useRestaurantStore.js";
 
 export default function AddRestaurantModal({ onClose }) {
   const [category, setCategory] = useState("");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const { addRestaurant } = useRestaurantsContext();
+
+  const addRestaurant = useRestaurantStore((state) => state.addRestaurant);
 
   async function handleFormSubmit(e) {
     e.preventDefault();
