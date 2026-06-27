@@ -5,11 +5,15 @@ import RestaurantList from "./components/RestaurantList.jsx";
 import { useState } from "react";
 import RestaurantDetailModal from "./components/RestaurantDetailModal.jsx";
 import AddRestaurantModal from "./components/AddRestaurantModal.jsx";
-import { ALL_CATEGORY } from "./constants/categories.js";
-import { RestaurantsProvider } from "./context/RestaurantsContext.jsx";
+import useRestaurantStore from "./store/useRestaurantStore.js";
 
 function App() {
-  const [selectedCategory, setSelectedCategory] = useState(ALL_CATEGORY);
+  const selectedCategory = useRestaurantStore(
+    (state) => state.selectedCategory,
+  );
+  const setSelectedCategory = useRestaurantStore(
+    (state) => state.setSelectedCategory,
+  );
   const [clickedRestaurant, setClickedRestaurant] = useState(null);
   const [isAddRestaurantModalOpen, setIsAddRestaurantModalOpen] =
     useState(false);
@@ -36,7 +40,7 @@ function App() {
   }
 
   return (
-    <RestaurantsProvider>
+    <>
       <Header onAddButtonClick={handleAddButtonClick} />
       <main>
         <CategoryFilter
@@ -59,7 +63,7 @@ function App() {
           <AddRestaurantModal onClose={handleAddRestaurantModalClose} />
         )}
       </aside>
-    </RestaurantsProvider>
+    </>
   );
 }
 

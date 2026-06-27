@@ -1,14 +1,25 @@
 import { CATEGORY_IMAGES } from "../constants/categoryImages.js";
 import styled from "styled-components";
-import { useRestaurantsContext } from "../context/useRestaurantsContext.js";
 import { filterRestaurants } from "../utils/filterRestaurants.js";
+import useRestaurantStore from "../store/useRestaurantStore.js";
+import { useEffect } from "react";
 
 export default function RestaurantList({
   selectedCategory,
   onRestaurantClick,
 }) {
-  const { restaurants, isLoading, error } = useRestaurantsContext();
+  const restaurants = useRestaurantStore((state) => state.restaurants);
+  const isLoading = useRestaurantStore((state) => state.isLoading);
+  const error = useRestaurantStore((state) => state.error);
+  const fetchRestaurants = useRestaurantStore(
+    (state) => state.fetchRestaurants,
+  );
+
   const filteredRestaurants = filterRestaurants(restaurants, selectedCategory);
+
+  useEffect(() => {
+    fetchRestaurants();
+  }, [fetchRestaurants]);
 
   return (
     <>
