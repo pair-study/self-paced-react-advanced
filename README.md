@@ -166,8 +166,71 @@ fetchRestaurants: async () => {
 
 `"categoryState"`처럼 일반적인 이름은 다른 앱과 충돌할 수 있다. `"self-paced-react-category"`로 프로젝트를 식별할 수 있게 변경했다.
 
+### 3. sessionStorage로 전환
+
+`useFilterStore`에서 localStorage를 sessionStorage로 변경했다. 카테고리 필터는 브라우저를 닫아도 유지해야 할 설정값이 아니라 현재 탐색 중인 임시 상태이기 때문이다.
+
+`persist`의 기본 storage는 localStorage다. sessionStorage로 바꾸려면 `storage` 옵션에 `createJSONStorage`를 넘긴다. `() => sessionStorage`처럼 함수로 감싸는 이유는 SSR 환경에서 `sessionStorage`가 없을 수 있어서 실제로 사용할 때 꺼내도록 하기 위함이다.
+
+```js
+import { persist, createJSONStorage } from "zustand/middleware";
+
+persist(
+  (set) => ({ ... }),
+  {
+    name: "self-paced-react-category",
+    storage: createJSONStorage(() => sessionStorage),
+  }
+)
+```
+
+### 4. useRestaurantData 커스텀 훅 추출
+
+컴포넌트가 `useRestaurantStore`를 직접 import하던 구조를 `useRestaurantData` 훅으로 감쌌다. store 구조가 바뀌어도 컴포넌트는 수정하지 않아도 되고, store에 접근하는 진입점이 한 곳으로 통일된다.
+
+```js
+// 변경 전 — 컴포넌트마다 store를 직접 참조
+const newRestaurants = useRestaurantStore((state) => state.newRestaurants);
+const isLoading = useRestaurantStore((state) => state.isLoading);
+
+// 변경 후 — 훅을 통해 접근
+const { newRestaurants, isLoading } = useRestaurantData();
+```
+
+훅 내부에서는 여전히 각 값을 개별 selector로 구독하고 있어서 리렌더링 최적화는 그대로 유지된다. 컴포넌트에서 구조분해로 받는 것처럼 보이지만, store 전체를 구독하는 것과는 다르다.
+
 ## 과거 코드와 비교
 
 ### 달라진 점
 
+**커스텀 훅 래퍼 유무**
+
+과거 코드는 store selector를 컴포넌트에서 직접 쓰지 않고 `useRestaurantData`, `useRestaurantModal` 커스텀 훅으로 감쌌다. 현재 코드는 컴포넌트에서 store를 직접 참조한다.
+
+컴포넌트가 store 구조를 알 필요 없이 훅만 import하면 되고, store 이름이나 구조가 바뀌어도 컴포넌트는 수정하지 않아도 되기 때문에 과거 방식이 더 나은 접근이라고 판단했다. 현재 방식은 store가 바뀌면 직접 import한 컴포넌트를 전부 찾아서 수정해야 한다.
+
+**Store 분리 기준**
+
+과거 코드는 `useRestaurantStore`(서버 데이터 + 카테고리)와 `useRestaurantModalStore`(모달 UI 상태)로 나눴다. 현재 코드는 `useRestaurantStore`(서버 데이터)와 `useFilterStore`(카테고리), 모달은 App 로컬 state로 분리했다.
+
+모달 열림/닫힘은 App 직계 자식에게만 영향을 주는 일시적인 UI 상태라 전역 store에 올릴 이유가 없고, 서버 데이터와 UI 필터 상태를 나누면 관심사 분리가 명확해지기 때문에 현재 방식이 더 나은 구조라고 판단했다.
+
+**sessionStorage vs localStorage**
+
+현재 코드는 카테고리 필터를 localStorage에 저장한다. 과거 코드는 리뷰 피드백을 받고 sessionStorage로 변경했다.
+
+카테고리 필터는 "브라우저를 닫아도 기억해야 하는 설정"이 아니라 "현재 탐색 중인 필터 상태"에 가깝고, sessionStorage는 탭/브라우저를 닫으면 초기화되어 오래된 상태가 쌓이지 않기 때문에 이 경우에는 과거 방식(sessionStorage)이 더 적합하다고 판단했다.
+
 ### 과거 코드에서 배운 점
+
+**localStorage/sessionStorage에 저장된 값은 신뢰하지 않는다**
+
+서버 데이터는 코드 로직으로만 바뀌지만, localStorage와 sessionStorage는 사용자가 브라우저 개발자 도구에서 직접 값을 수정하거나 이상한 값을 넣을 수 있다. `persist` 미들웨어는 저장/복원 과정의 기술적 오류(JSON 파싱 실패 등)는 처리해주지만, 저장된 값이 앱에서 허용하는 값인지까지는 검증하지 않는다.
+
+과거 코드는 `onRehydrateStorage` 옵션을 써서 sessionStorage에서 값을 꺼낸 직후 카테고리가 유효한 값인지 확인하고, 아니면 "전체"로 되돌리는 방어 로직을 추가했다.
+
+이번 미션에서는 구현하지 않았다. 카테고리 값이 오염되더라도 필터가 잘못 적용되는 수준이라 사용자 데이터나 보안에 영향이 없기 때문이다. 결제 정보나 인증 상태처럼 오염 시 심각한 문제가 생기는 값이라면 필수로 추가해야 한다.
+
+**sessionStorage vs localStorage 선택 기준**
+
+세션 단위로만 유지되면 충분한 상태는 sessionStorage가 적합하다. localStorage는 탭 간에 공유되고 브라우저 종료 후에도 유지된다. sessionStorage는 탭별로 독립적이고 세션이 끝나면 초기화된다.
