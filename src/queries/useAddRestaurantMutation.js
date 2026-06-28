@@ -6,7 +6,22 @@ export function useAddRestaurantMutation() {
 
   return useMutation({
     mutationFn: createRestaurant,
-    onSuccess: () => {
+    onMutate: async (newRestaurant) => {
+      await queryClient.cancelQueries({ queryKey: ["restaurants"] });
+
+      const previousRestaurants = queryClient.getQueryData(["restaurants"]);
+
+      queryClient.setQueryData(["restaurants"], (old) => [
+        ...old,
+        { ...newRestaurant, id: crypto.randomUUID() },
+      ]);
+
+      return { previousRestaurants };
+    },
+    onError: (_err, _newRestaurant, context) => {
+      queryClient.setQueryData(["restaurants"], context.previousRestaurants);
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["restaurants"] });
     },
   });
