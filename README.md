@@ -121,6 +121,29 @@ return useMutation({
 
 `onSuccess` 대신 `onSettled`를 쓴 이유는, 실패 후 롤백된 상태에서도 서버 데이터와 동기화가 필요하기 때문이다. `onSuccess`는 성공 시에만 실행되지만 `onSettled`는 성공/실패 상관없이 항상 실행된다.
 
+### useOptimistic (React 19)
+
+React 19에서 정식 출시된 훅으로, `useMutation`의 `onMutate` 없이 낙관적 업데이트를 더 간결하게 구현할 수 있다.
+
+```js
+const [optimisticRestaurants, addOptimistic] = useOptimistic(
+  restaurants,
+  (current, newItem) => [...current, newItem]
+);
+```
+
+TanStack Query의 Optimistic Update와 비교하면:
+
+| | TanStack Query | useOptimistic |
+|---|---|---|
+| 업데이트 대상 | 캐시(`queryClient`) | 로컬 UI 상태 |
+| 롤백 | `onError`에서 직접 처리 | 자동 (액션 완료/실패 시) |
+| 최적 환경 | fetch 기반 REST API | Next.js Server Actions |
+
+`useOptimistic`은 Next.js Server Actions와 함께 쓸 때 빛을 발한다. Server Action이 완료되면 Next.js가 자동으로 페이지를 재검증하고, `useOptimistic`이 자동으로 임시 상태를 해제한다. 롤백 코드를 직접 짤 필요가 없다.
+
+반면 현재 미션처럼 별도 백엔드 API 서버와 fetch로 통신하는 구조에서는 TanStack Query의 Optimistic Update가 더 자연스럽다. 두 도구를 함께 섞으면 서로 다른 상태를 들고 있어서 오히려 복잡해진다.
+
 ---
 
 ## 🤔 TanStack Query를 왜 사용하는가 — Zustand와 비교
