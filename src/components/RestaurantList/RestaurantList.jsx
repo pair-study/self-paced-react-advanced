@@ -1,16 +1,17 @@
 import { CATEGORY_IMAGES } from "../../constants/categoryImages";
 import styled from "styled-components";
 import { textSubtitle, textBody } from "../../styles/typography";
-import useRestaurantStore from "../../store/useRestaurantStore";
 import { ALL_CATEGORY } from "../../constants/categories";
+import { useRestaurantsQuery } from "../../queries/useRestaurantsQuery";
 
 export default function RestaurantList({
   selectedCategory,
   onRestaurantClick,
 }) {
-  const newRestaurants = useRestaurantStore((state) => state.newRestaurants);
-  const isLoading = useRestaurantStore((state) => state.isLoading);
-  const error = useRestaurantStore((state) => state.error);
+  const { data: newRestaurants, isLoading, error } = useRestaurantsQuery();
+
+  if (isLoading) return <StatusText>로딩중입니다.</StatusText>;
+  if (error) return <StatusText>{error.message}</StatusText>;
 
   const filteredRestaurants =
     selectedCategory === ALL_CATEGORY
@@ -19,8 +20,6 @@ export default function RestaurantList({
 
   return (
     <ListContainer>
-      {isLoading && <p>로딩중입니다.</p>}
-      {error && <p>{error}</p>}
       <RestaurantUl>
         {filteredRestaurants.map((restaurant) => (
           <Restaurant key={restaurant.id}>
@@ -44,6 +43,11 @@ export default function RestaurantList({
     </ListContainer>
   );
 }
+
+const StatusText = styled.p`
+  padding: 16px 8px;
+  color: var(--grey-300);
+`;
 
 const ListContainer = styled.section`
   display: flex;

@@ -3,27 +3,22 @@ import { useState } from "react";
 import Modal from "./Modal";
 import styled from "styled-components";
 import { textCaption } from "../../styles/typography";
-import useRestaurantStore from "../../store/useRestaurantStore";
+import { useAddRestaurantMutation } from "../../queries/useAddRestaurantMutation";
 
 export default function AddRestaurantModal({ onClose }) {
-  const registerRestaurant = useRestaurantStore((state) => state.registerRestaurant);
+  const { mutate } = useAddRestaurantMutation();
+
   const [category, setCategory] = useState("");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    try {
-      await registerRestaurant({
-        id: crypto.randomUUID(),
-        category,
-        name,
-        description,
-      });
-      onClose();
-    } catch {
-      alert("음식점 추가에 실패했습니다. 다시 시도해주세요.");
-    }
+    onClose();
+    mutate(
+      { category, name, description },
+      { onError: () => alert("음식점 추가에 실패했습니다. 다시 시도해주세요.") },
+    );
   };
 
   return (
