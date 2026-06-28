@@ -8,15 +8,14 @@ export default function RestaurantList({
   onRestaurantClick,
 }) {
   const { data: restaurants, isLoading, error } = useRestaurantsQuery();
-  const filteredRestaurants = filterRestaurants(
-    restaurants ?? [],
-    selectedCategory,
-  );
+
+  if (isLoading) return <p>불러오는 중...</p>;
+  if (error) return <p>{error.message}</p>;
+
+  const filteredRestaurants = filterRestaurants(restaurants, selectedCategory);
 
   return (
     <>
-      {isLoading && <p>불러오는 중...</p>}
-      {error && <p>{error.message}</p>}
       <List>
         {filteredRestaurants.map((restaurant) => {
           return (
