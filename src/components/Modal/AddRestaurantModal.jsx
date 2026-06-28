@@ -3,27 +3,30 @@ import { useState } from "react";
 import Modal from "./Modal";
 import styled from "styled-components";
 import { textCaption } from "../../styles/typography";
-import useRestaurantStore from "../../store/useRestaurantStore";
+import { addRestaurant } from "../../api";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
 
 export default function AddRestaurantModal({ onClose }) {
-  const registerRestaurant = useRestaurantStore((state) => state.registerRestaurant);
+  const queryClient = useQueryClient();
+
+  const { mutate } = useMutation({
+    mutationFn: (newRestaurant) => addRestaurant(newRestaurant),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["restaurants"] });
+      onClose();
+    },
+    onError: () => {
+      alert("음식점 추가에 실패했습니다. 다시 시도해주세요.");
+    },
+  });
+
   const [category, setCategory] = useState("");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    try {
-      await registerRestaurant({
-        id: crypto.randomUUID(),
-        category,
-        name,
-        description,
-      });
-      onClose();
-    } catch {
-      alert("음식점 추가에 실패했습니다. 다시 시도해주세요.");
-    }
+    mutate({ id: crypto.randomUUID(), category, name, description });
   };
 
   return (
