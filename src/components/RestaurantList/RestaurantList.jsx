@@ -1,21 +1,28 @@
 import { CATEGORY_IMAGES } from "../../constants/categoryImages";
 import styled from "styled-components";
 import { textSubtitle, textBody } from "../../styles/typography";
-import useRestaurantStore from "../../store/useRestaurantStore";
 import { ALL_CATEGORY } from "../../constants/categories";
+import { useQuery } from "@tanstack/react-query";
+import { getRestaurants } from "../../api";
 
 export default function RestaurantList({
   selectedCategory,
   onRestaurantClick,
 }) {
-  const newRestaurants = useRestaurantStore((state) => state.newRestaurants);
-  const isLoading = useRestaurantStore((state) => state.isLoading);
-  const error = useRestaurantStore((state) => state.error);
+  const {
+    data: newRestaurants,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["restaurants"],
+    queryFn: getRestaurants,
+    // queryFn: () => getRestaurants(인자가 있을 경우)
+  });
 
   const filteredRestaurants =
     selectedCategory === ALL_CATEGORY
-      ? newRestaurants
-      : newRestaurants.filter((r) => r.category === selectedCategory);
+      ? (newRestaurants ?? [])
+      : (newRestaurants ?? []).filter((r) => r.category === selectedCategory);
 
   return (
     <ListContainer>
