@@ -303,3 +303,105 @@ Context API는 value 전체가 바뀌면 구독하는 모든 컴포넌트가 리
 Zustand는 selector로 구독한 값이 바뀔 때만 리렌더링된다. `restaurants`가 바뀌어도 `addRestaurant` 액션만 구독하는 컴포넌트는 리렌더링되지 않는다. Provider 없이 어디서든 import해서 사용할 수 있어 설정도 간단하다.
 
 다만 이번 미션에서 Zustand store에 올린 서버 상태(`newRestaurants`, `isLoading`, `error`)는 Zustand가 직접 처리해주지 않는 영역이다. fetching, caching, 재시도를 직접 구현해야 했다. 서버 상태 관리에는 TanStack Query가 더 적합한 도구다.
+
+---
+
+## Step2-3
+- TanStack Query 적용하기
+
+### 미션 개요
+- 핵심 키워드: `TanStack Query`, `Optimistic Update`
+
+### 스터디 세션 기록
+> 날짜: 2026.06.24 ~ 2026.06.28
+
+### 공통으로 어려웠던 점
+
+서버 상태(`restaurants`)와 클라이언트 상태(`selectedCategory`, 모달 열림/닫힘)를 어떤 기준으로 구분하고 각각 어떤 도구로 관리할지 판단하는 것이 공통으로 고민한 지점이었다.
+
+낙관적 업데이트에서 `onMutate`, `onError`, `onSettled` 각 콜백의 실행 시점과 역할을 구분하고, `onMutate`의 반환값이 `context`로 전달되는 구조를 파악하는 과정이 필요했다.
+
+### 서로 다르게 접근한 부분
+
+#### 1. useQuery/useMutation 위치 — 커스텀 훅 vs 컴포넌트 직접
+
+**hippo — 처음부터 `src/queries/`에 커스텀 훅으로 분리**
+
+```js
+// src/queries/useRestaurantsQuery.js
+export function useRestaurantsQuery() {
+  return useQuery({ queryKey: ["restaurants"], queryFn: getRestaurants });
+}
+```
+
+**cactus — 컴포넌트에 직접 작성**
+
+```js
+// RestaurantList.jsx
+const { data, isLoading, error } = useQuery({
+  queryKey: RESTAURANTS_QUERY_KEY,
+  queryFn: getRestaurants,
+});
+```
+
+커스텀 훅으로 분리하면 `staleTime`, `select` 같은 옵션을 추가할 때 컴포넌트를 수정하지 않아도 되고, 같은 데이터를 여러 컴포넌트에서 쓸 때 `queryKey`와 `queryFn`을 중복 작성하지 않아도 된다. 지금은 한 곳에서만 쓰이므로 두 방식 모두 유효하다.
+
+#### 2. 쿼리 키 관리 — 인라인 vs 상수 파일
+
+**hippo — 훅 파일 내에 인라인으로 작성**
+
+```js
+queryKey: ["restaurants"]
+```
+
+**cactus — 별도 상수 파일로 분리**
+
+```js
+// src/constants/queryKeys.js
+export const RESTAURANTS_QUERY_KEY = ["restaurants"];
+```
+
+훅을 한 폴더에 모아두면 인라인 관리도 충분하다. 상수 파일로 분리하면 오타로 인한 캐시 키 불일치를 방지하고, 추후 팩토리 패턴으로 확장하기 용이하다.
+
+#### 3. 모달 닫기 타이밍 — 서버 응답 후 vs 즉시
+
+**hippo — `onSuccess`에서 닫기**
+
+```js
+mutation.mutate(data, { onSuccess: () => onClose() });
+```
+
+**cactus — `mutate` 호출 전 즉시 닫기**
+
+```js
+onClose();
+mutate(data, { onError: () => alert("...") });
+```
+
+`onSuccess`는 서버 응답을 확인한 뒤 모달을 닫으므로 실패 시 재시도가 쉽다. 즉시 닫는 방식은 낙관적 업데이트와 모달 닫힘이 동시에 일어나 UX가 일관되지만, 실패 시 모달이 닫힌 상태에서 롤백이 발생한다.
+
+#### 4. 로딩/에러 처리 — 인라인 vs early return
+
+**hippo — JSX 내 인라인 조건부 렌더링**
+
+```js
+{isLoading && <p>불러오는 중...</p>}
+{error && <p>{error.message}</p>}
+```
+
+**cactus — early return**
+
+```js
+if (isLoading) return <StatusText>로딩중입니다.</StatusText>;
+if (error) return <StatusText>{error.message}</StatusText>;
+```
+
+인라인 방식은 로딩 중에도 리스트 영역의 레이아웃이 유지된다. early return은 예외 상태를 먼저 처리해 이후 코드가 정상 흐름에만 집중할 수 있다.
+
+### 기술 선택과 트레이드오프
+
+Zustand는 클라이언트 상태 관리 도구로, 서버 상태를 다루려면 `isLoading`, `error`, 중복 요청 방지를 직접 구현해야 한다. TanStack Query는 서버 상태에 특화된 도구로, 캐싱, 자동 refetch, 로딩/에러 상태를 자동으로 처리한다. 탭 포커스나 네트워크 재연결 시 자동으로 최신 데이터를 가져오는 것도 기본 동작이다.
+
+두 도구는 역할이 다르므로 함께 쓰는 것이 자연스럽다. 서버에서 오는 데이터는 TanStack Query, 앱이 소유하는 UI 상태는 Zustand가 담당한다.
+
+TanStack Query는 학습 곡선이 있다. `queryKey`, `onMutate`, `onSettled` 등 새로운 개념을 익혀야 하고, `QueryClientProvider` 설정도 필요하다. 서버 상태가 없거나 캐싱 이점이 크지 않은 규모라면 도입 비용 대비 이점이 제한적일 수 있다.
