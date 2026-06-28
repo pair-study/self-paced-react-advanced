@@ -11,12 +11,26 @@ export default function AddRestaurantModal({ onClose }) {
 
   const { mutate } = useMutation({
     mutationFn: (newRestaurant) => addRestaurant(newRestaurant),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["restaurants"] });
-      onClose();
+    onMutate: async (newRestaurant) => {
+      // 1. 진행 중인 refetch 취소
+      await queryClient.cancelQueries({ queryKey: ["restaurants"] });
+      // 2. 현재 캐시 저장 (롤백용)
+      const previous = queryClient.getQueryData(["restaurants"]);
+      // 3. 캐시에 새 식당 먼저 추가
+      queryClient.setQueryData(["restaurants"], (old) => [
+        ...old,
+        newRestaurant,
+      ]);
+      onClose(); // 모달 즉시 닫기
+
+      return { previous }; // onError로 넘김
     },
-    onError: () => {
+    onError: (err, _, context) => {
+      queryClient.setQueryData(["restaurants"], context.previous);
       alert("음식점 추가에 실패했습니다. 다시 시도해주세요.");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["restaurants"] });
     },
   });
 
