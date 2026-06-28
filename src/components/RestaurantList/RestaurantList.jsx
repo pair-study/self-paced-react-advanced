@@ -4,6 +4,7 @@ import { textSubtitle, textBody } from "../../styles/typography";
 import { ALL_CATEGORY } from "../../constants/categories";
 import { useQuery } from "@tanstack/react-query";
 import { getRestaurants } from "../../api";
+import { RESTAURANTS_QUERY_KEY } from "../../constants/queryKeys";
 
 export default function RestaurantList({
   selectedCategory,
@@ -14,20 +15,20 @@ export default function RestaurantList({
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["restaurants"],
+    queryKey: RESTAURANTS_QUERY_KEY,
     queryFn: getRestaurants,
-    // queryFn: () => getRestaurants(인자가 있을 경우)
   });
+
+  if (isLoading) return <StatusText>로딩중입니다.</StatusText>;
+  if (error) return <StatusText>{error.message}</StatusText>;
 
   const filteredRestaurants =
     selectedCategory === ALL_CATEGORY
-      ? (newRestaurants ?? [])
-      : (newRestaurants ?? []).filter((r) => r.category === selectedCategory);
+      ? newRestaurants
+      : newRestaurants.filter((r) => r.category === selectedCategory);
 
   return (
     <ListContainer>
-      {isLoading && <p>로딩중입니다.</p>}
-      {error && <p>{error}</p>}
       <RestaurantUl>
         {filteredRestaurants.map((restaurant) => (
           <Restaurant key={restaurant.id}>
@@ -51,6 +52,11 @@ export default function RestaurantList({
     </ListContainer>
   );
 }
+
+const StatusText = styled.p`
+  padding: 16px 8px;
+  color: var(--grey-300);
+`;
 
 const ListContainer = styled.section`
   display: flex;

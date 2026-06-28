@@ -5,6 +5,7 @@ import styled from "styled-components";
 import { textCaption } from "../../styles/typography";
 import { addRestaurant } from "../../api";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { RESTAURANTS_QUERY_KEY } from "../../constants/queryKeys";
 
 export default function AddRestaurantModal({ onClose }) {
   const queryClient = useQueryClient();
@@ -12,25 +13,27 @@ export default function AddRestaurantModal({ onClose }) {
   const { mutate } = useMutation({
     mutationFn: (newRestaurant) => addRestaurant(newRestaurant),
     onMutate: async (newRestaurant) => {
-      // 1. 진행 중인 refetch 취소
-      await queryClient.cancelQueries({ queryKey: ["restaurants"] });
-      // 2. 현재 캐시 저장 (롤백용)
-      const previous = queryClient.getQueryData(["restaurants"]);
-      // 3. 캐시에 새 식당 먼저 추가
-      queryClient.setQueryData(["restaurants"], (old) => [
-        ...old,
-        newRestaurant,
-      ]);
-      onClose(); // 모달 즉시 닫기
-
-      return { previous }; // onError로 넘김
+      await queryClient.cancelQueries({ queryKey: RESTAURANTS_QUERY_KEY });
+      const previous = queryClient.getQueryData(RESTAURANTS_QUERY_KEY);
+      const optimisticItem = {
+        id: `optimistic-${Date.now()}`,
+        ...newRestaurant,
+      };
+      queryClient.setQueryData(RESTAURANTS_QUERY_KEY, (old) => {
+        const current = Array.isArray(old) ? old : [];
+        return [...current, optimisticItem];
+      });
+      onClose();
+      return { previous };
     },
     onError: (err, _, context) => {
-      queryClient.setQueryData(["restaurants"], context.previous);
+      if (context?.previous) {
+        queryClient.setQueryData(RESTAURANTS_QUERY_KEY, context.previous);
+      }
       alert("음식점 추가에 실패했습니다. 다시 시도해주세요.");
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["restaurants"] });
+      queryClient.invalidateQueries({ queryKey: RESTAURANTS_QUERY_KEY });
     },
   });
 
