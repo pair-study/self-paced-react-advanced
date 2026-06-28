@@ -3,39 +3,10 @@ import { useState } from "react";
 import Modal from "./Modal";
 import styled from "styled-components";
 import { textCaption } from "../../styles/typography";
-import { addRestaurant } from "../../api";
-import { useQueryClient, useMutation } from "@tanstack/react-query";
-import { RESTAURANTS_QUERY_KEY } from "../../constants/queryKeys";
+import { useAddRestaurantMutation } from "../../queries/useAddRestaurantMutation";
 
 export default function AddRestaurantModal({ onClose }) {
-  const queryClient = useQueryClient();
-
-  const { mutate } = useMutation({
-    mutationFn: (newRestaurant) => addRestaurant(newRestaurant),
-    onMutate: async (newRestaurant) => {
-      await queryClient.cancelQueries({ queryKey: RESTAURANTS_QUERY_KEY });
-      const previous = queryClient.getQueryData(RESTAURANTS_QUERY_KEY);
-      const optimisticItem = {
-        id: `optimistic-${Date.now()}`,
-        ...newRestaurant,
-      };
-      queryClient.setQueryData(RESTAURANTS_QUERY_KEY, (old) => {
-        const current = Array.isArray(old) ? old : [];
-        return [...current, optimisticItem];
-      });
-      onClose();
-      return { previous };
-    },
-    onError: (err, _, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(RESTAURANTS_QUERY_KEY, context.previous);
-      }
-      alert("음식점 추가에 실패했습니다. 다시 시도해주세요.");
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: RESTAURANTS_QUERY_KEY });
-    },
-  });
+  const { mutate } = useAddRestaurantMutation();
 
   const [category, setCategory] = useState("");
   const [name, setName] = useState("");
@@ -43,7 +14,11 @@ export default function AddRestaurantModal({ onClose }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    mutate({ id: crypto.randomUUID(), category, name, description });
+    onClose();
+    mutate(
+      { category, name, description },
+      { onError: () => alert("음식점 추가에 실패했습니다. 다시 시도해주세요.") },
+    );
   };
 
   return (

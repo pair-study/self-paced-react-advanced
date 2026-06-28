@@ -2,22 +2,13 @@ import { CATEGORY_IMAGES } from "../../constants/categoryImages";
 import styled from "styled-components";
 import { textSubtitle, textBody } from "../../styles/typography";
 import { ALL_CATEGORY } from "../../constants/categories";
-import { useQuery } from "@tanstack/react-query";
-import { getRestaurants } from "../../api";
-import { RESTAURANTS_QUERY_KEY } from "../../constants/queryKeys";
+import { useRestaurantsQuery } from "../../queries/useRestaurantsQuery";
 
 export default function RestaurantList({
   selectedCategory,
   onRestaurantClick,
 }) {
-  const {
-    data: newRestaurants,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: RESTAURANTS_QUERY_KEY,
-    queryFn: getRestaurants,
-  });
+  const { data: newRestaurants, isLoading, error } = useRestaurantsQuery();
 
   if (isLoading) return <StatusText>로딩중입니다.</StatusText>;
   if (error) return <StatusText>{error.message}</StatusText>;
