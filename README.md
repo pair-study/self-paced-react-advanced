@@ -400,8 +400,24 @@ if (error) return <StatusText>{error.message}</StatusText>;
 
 ### 기술 선택과 트레이드오프
 
-Zustand는 클라이언트 상태 관리 도구로, 서버 상태를 다루려면 `isLoading`, `error`, 중복 요청 방지를 직접 구현해야 한다. TanStack Query는 서버 상태에 특화된 도구로, 캐싱, 자동 refetch, 로딩/에러 상태를 자동으로 처리한다. 탭 포커스나 네트워크 재연결 시 자동으로 최신 데이터를 가져오는 것도 기본 동작이다.
+세 미션을 통해 상태 관리 도구를 선택하는 기준이 구체화됐다.
 
-두 도구는 역할이 다르므로 함께 쓰는 것이 자연스럽다. 서버에서 오는 데이터는 TanStack Query, 앱이 소유하는 UI 상태는 Zustand가 담당한다.
+**상태의 종류에 따라 도구가 달라진다**
 
-TanStack Query는 학습 곡선이 있다. `queryKey`, `onMutate`, `onSettled` 등 새로운 개념을 익혀야 하고, `QueryClientProvider` 설정도 필요하다. 서버 상태가 없거나 캐싱 이점이 크지 않은 규모라면 도입 비용 대비 이점이 제한적일 수 있다.
+| 상태 종류 | 예시 | 적합한 도구 |
+|---|---|---|
+| 로컬 UI 상태 | 모달 열림/닫힘, 클릭된 항목 | `useState` |
+| 공유 클라이언트 상태 | 카테고리 필터, 테마 | Context API / Zustand |
+| 서버 상태 | 식당 목록, 유저 정보 | TanStack Query |
+
+컴포넌트 하나에서만 쓰이는 UI 상태를 전역 store에 올리는 것은 과도한 설계다. 반대로 여러 컴포넌트에서 공유하거나 서버와 동기화가 필요한 상태를 `useState`로만 관리하면 prop drilling이나 데이터 일관성 문제가 생긴다.
+
+**Context API vs Zustand**
+
+Context API는 외부 라이브러리 없이 React만으로 전역 상태를 공유할 수 있다. 다만 value가 바뀌면 해당 Context를 구독하는 모든 컴포넌트가 리렌더링된다. `useReducer`와 조합하거나 Context를 잘게 분리하면 이 문제를 완화할 수 있고, `children` prop을 활용해 Provider 범위를 명확히 제어하는 패턴도 유효하다. 변경이 거의 없는 정적 값(테마, 로케일)이나 외부 라이브러리 없이 해결해야 하는 상황에서는 Context API가 적합하다.
+
+Zustand는 selector로 필요한 상태만 구독해 불필요한 리렌더링을 방지하고, Provider 없이 어디서든 접근할 수 있다. 설정이 간단하고 boilerplate가 적어 빠르게 전역 상태가 필요할 때 유리하다. 다만 전역 접근이 가능한 만큼 상태 변경 출처를 추적하기 어려워질 수 있고, 어떤 도구를 쓸지는 팀 컨벤션에 따라 달라지기도 한다.
+
+**서버 상태는 TanStack Query**
+
+Zustand로 서버 상태를 관리하면 `isLoading`, `error`, 중복 요청 방지를 직접 구현해야 한다. TanStack Query는 캐싱, 자동 refetch, 로딩/에러 상태를 자동으로 처리한다. 단, `QueryClient` 설정과 `queryKey`, `onMutate`/`onSettled` 같은 새로운 개념을 익혀야 하므로, API 호출이 없거나 데이터가 거의 변경되지 않는 앱이라면 도입 비용 대비 이점이 크지 않다.
