@@ -5,13 +5,11 @@ import RestaurantList from "./components/RestaurantList.jsx";
 import { useState } from "react";
 import RestaurantDetailModal from "./components/RestaurantDetailModal.jsx";
 import AddRestaurantModal from "./components/AddRestaurantModal.jsx";
-import useRestaurantStore from "./store/useRestaurantStore.js";
+import useFilterStore from "./store/useFilterStore.js";
 
 function App() {
-  const selectedCategory = useRestaurantStore(
-    (state) => state.selectedCategory,
-  );
-  const setSelectedCategory = useRestaurantStore(
+  const selectedCategory = useFilterStore((state) => state.selectedCategory);
+  const setSelectedCategory = useFilterStore(
     (state) => state.setSelectedCategory,
   );
   const [clickedRestaurant, setClickedRestaurant] = useState(null);

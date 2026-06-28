@@ -2,24 +2,25 @@ import { useState } from "react";
 import Modal from "./Modal.jsx";
 import { CATEGORIES } from "../constants/categories.js";
 import styled from "styled-components";
-import useRestaurantStore from "../store/useRestaurantStore.js";
+import { useAddRestaurantMutation } from "../queries/useAddRestaurantMutation.js";
 
 export default function AddRestaurantModal({ onClose }) {
   const [category, setCategory] = useState("");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
 
-  const addRestaurant = useRestaurantStore((state) => state.addRestaurant);
+  const mutation = useAddRestaurantMutation();
 
   async function handleFormSubmit(e) {
     e.preventDefault();
 
-    try {
-      await addRestaurant({ category, name, description });
-      onClose();
-    } catch {
-      alert("음식점 추가에 실패했습니다. 다시 시도해주세요.");
-    }
+    mutation.mutate(
+      { category, name, description },
+      {
+        onSuccess: () => onClose(),
+        onError: () => alert("음식점 추가에 실패했습니다. 다시 시도해주세요."),
+      },
+    );
   }
 
   return (

@@ -1,30 +1,21 @@
 import { CATEGORY_IMAGES } from "../constants/categoryImages.js";
 import styled from "styled-components";
 import { filterRestaurants } from "../utils/filterRestaurants.js";
-import useRestaurantStore from "../store/useRestaurantStore.js";
-import { useEffect } from "react";
+import { useRestaurantsQuery } from "../queries/useRestaurantsQuery.js";
 
 export default function RestaurantList({
   selectedCategory,
   onRestaurantClick,
 }) {
-  const restaurants = useRestaurantStore((state) => state.restaurants);
-  const isLoading = useRestaurantStore((state) => state.isLoading);
-  const error = useRestaurantStore((state) => state.error);
-  const fetchRestaurants = useRestaurantStore(
-    (state) => state.fetchRestaurants,
-  );
+  const { data: restaurants, isLoading, error } = useRestaurantsQuery();
+
+  if (isLoading) return <p>불러오는 중...</p>;
+  if (error) return <p>{error.message}</p>;
 
   const filteredRestaurants = filterRestaurants(restaurants, selectedCategory);
 
-  useEffect(() => {
-    fetchRestaurants();
-  }, [fetchRestaurants]);
-
   return (
     <>
-      {isLoading && <p>불러오는 중...</p>}
-      {error && <p>{error}</p>}
       <List>
         {filteredRestaurants.map((restaurant) => {
           return (

@@ -1,155 +1,220 @@
-# Zustand를 사용해서 전역 상태 관리하기
+# TanStack Query를 사용해서 서버 상태 관리하기
 
 ## 🎯 개인 목표 및 목표 달성을 위한 행동 가이드
 
 이번 미션을 통해 다음과 같은 학습 경험들을 쌓는 것을 목표로 한다.
 
-1. Context API로 구현된 앱을 Zustand로 마이그레이션하면서 두 방식의 차이를 체감한다.
-2. `create`, `set`, `get`, selector 개념을 직접 사용하며 Zustand 스토어 구조를 익힌다.
-3. 전역 상태로 관리할 것과 로컬 상태로 유지할 것을 스스로 판단하는 능력을 기른다.
+1. 서버 상태와 클라이언트 상태를 구분하고, TanStack Query로 서버 상태를 분리한다.
+2. `useQuery`, `useMutation`, `QueryClient` 개념을 직접 사용하며 TanStack Query 구조를 익힌다.
+3. Optimistic Update를 구현하며 UX와 데이터 정합성 사이의 트레이드오프를 체감한다.
 
 ---
 
 ## 📝 기능 구현 목록
 
-- [x] `useRestaurantStore` 생성 — `restaurants`, `addRestaurant`, `isLoading`, `error`, `fetchRestaurants` 포함
-- [x] `RestaurantList`에서 selector로 스토어 구독, `useEffect`로 초기 데이터 fetch
-- [x] `AddRestaurantModal`에서 스토어의 `addRestaurant` 직접 호출
-- [x] `App.jsx`에서 `RestaurantsProvider` 제거
-- [x] `selectedCategory`를 스토어로 이동 및 `persist` 미들웨어로 새로고침 후에도 유지
+- [x] `@tanstack/react-query` 설치 및 `QueryClient` + `QueryClientProvider` 설정
+- [x] `useRestaurantsQuery` 생성 — `useQuery`로 음식점 목록 조회
+- [x] `useAddRestaurantMutation` 생성 — `useMutation`으로 음식점 추가
+- [x] `RestaurantList`에서 `useRestaurantsQuery`로 교체
+- [x] `AddRestaurantModal`에서 `useAddRestaurantMutation`으로 교체
+- [x] `useRestaurantStore`를 `useFilterStore`로 분리 — `selectedCategory`만 관리
+- [x] Optimistic Update 적용 — 요청 즉시 UI 반영, 실패 시 롤백
+- [x] TanStack Query Devtools 추가
 
 ---
 
 ## 📚 학습 내용
 
-### Zustand 핵심 개념
+### 서버 상태 vs 클라이언트 상태
+
+| 구분 | 예시 | 특징 |
+|---|---|---|
+| 서버 상태 | `restaurants` | 서버가 소유, 다른 사용자가 변경 가능 |
+| 클라이언트 상태 | `selectedCategory`, 모달 열림/닫힘 | 내 앱이 소유, 내가 바꿀 때만 바뀜 |
+
+Zustand로 `restaurants`를 관리하면 내 앱이 마지막으로 가져온 스냅샷을 들고 있는 것이다. 그 사이 다른 사용자가 추가한 음식점은 알 수 없다. TanStack Query는 캐싱, 자동 갱신, 로딩/에러 상태를 자동으로 관리해준다.
+
+### TanStack Query 핵심 개념
 
 | 개념 | 설명 |
 |---|---|
-| `create` | 스토어를 생성한다. 반환값이 훅이라 `useRestaurantStore()`로 바로 사용한다. |
-| `set` | 상태를 업데이트한다. 얕은 병합(shallow merge)이라 바꾸지 않는 필드는 그대로 유지된다. |
-| `get` | 액션 안에서 현재 스토어 상태를 읽거나 다른 액션을 호출할 때 사용한다. |
-| selector | `useStore((state) => state.xxx)` 형태로 필요한 상태만 구독한다. 해당 값이 바뀔 때만 리렌더링된다. |
+| `QueryClient` | 캐시 저장소. 앱 전체에서 하나만 생성한다. |
+| `QueryKey` | 캐시를 식별하는 고유 키. 같은 키면 같은 캐시를 공유한다. |
+| `useQuery` | 데이터 조회. `queryFn`이 반환한 데이터를 캐시에 저장한다. |
+| `useMutation` | 데이터 변경(POST, PUT, DELETE). `onSuccess`, `onError`, `onSettled` 콜백을 제공한다. |
 
 ```js
-const useRestaurantStore = create((set, get) => ({
-  // 상태
-  restaurants: [],
-  isLoading: false,
-  error: null,
+// useRestaurantsQuery.js
+export function useRestaurantsQuery() {
+  return useQuery({
+    queryKey: ["restaurants"],
+    queryFn: getRestaurants,
+  });
+}
 
-  // 액션
-  fetchRestaurants: async () => {
-    set({ isLoading: true, error: null });
-    try {
-      const data = await getRestaurants();
-      set({ restaurants: data });
-    } catch {
-      set({ error: "음식점 목록을 불러오지 못했습니다." });
-    } finally {
-      set({ isLoading: false });
-    }
-  },
-  addRestaurant: async (restaurant) => {
-    await createRestaurant(restaurant);
-    await get().fetchRestaurants(); // 다른 액션 호출
-  },
-}));
+// useAddRestaurantMutation.js
+export function useAddRestaurantMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: createRestaurant,
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["restaurants"] });
+    },
+  });
+}
 ```
 
-### persist 미들웨어
+`useQuery`를 커스텀 훅으로 감싼 이유는 `queryKey`를 한 곳에서 관리하기 위해서다. `invalidateQueries`에서도 같은 키를 써야 하므로, 여러 곳에 문자열이 흩어지면 키가 바뀔 때 모든 곳을 찾아야 한다.
 
-스토어의 상태를 localStorage에 자동으로 저장/복원해주는 Zustand 내장 미들웨어다. `partialize`로 저장할 상태만 선택할 수 있다.
+### Zustand와의 역할 분리
+
+TanStack Query 도입 후 `useRestaurantStore`에서 서버 상태(`restaurants`, `isLoading`, `error`, `fetchRestaurants`, `addRestaurant`)를 모두 제거했다. `selectedCategory`는 클라이언트 상태이므로 `useFilterStore`로 분리해서 유지했다.
 
 ```js
-const useRestaurantStore = create(
+// useFilterStore.js — selectedCategory만 관리
+const useFilterStore = create(
   persist(
-    (set, get) => ({ ... }),
+    (set) => ({
+      selectedCategory: ALL_CATEGORY,
+      setSelectedCategory: (category) => set({ selectedCategory: category }),
+    }),
     {
-      name: "restaurant-storage",
-      partialize: (state) => ({ selectedCategory: state.selectedCategory }),
-    }
-  )
+      name: "category-filter",
+      storage: createJSONStorage(() => sessionStorage),
+    },
+  ),
 );
 ```
 
-`restaurants`는 서버에서 매번 가져오므로 저장할 필요가 없고, `selectedCategory`만 persist 대상으로 지정했다.
+`sessionStorage`를 선택한 이유는 카테고리 필터가 "브라우저를 닫아도 기억해야 하는 설정"이 아니라 "현재 탐색 중인 필터 상태"에 가깝기 때문이다. `localStorage`를 쓰면 오래된 필터 상태가 계속 남아있게 된다.
+
+### Optimistic Update
+
+서버 응답을 기다리지 않고 성공했다고 가정하고 UI를 먼저 업데이트하는 패턴이다.
+
+```js
+return useMutation({
+  mutationFn: createRestaurant,
+  onMutate: async (newRestaurant) => {
+    // 1. 진행 중인 refetch 취소 (낙관적 업데이트를 덮어쓰지 않도록)
+    await queryClient.cancelQueries({ queryKey: ["restaurants"] });
+    // 2. 현재 캐시 저장 (실패 시 롤백용)
+    const previousRestaurants = queryClient.getQueryData(["restaurants"]);
+    // 3. 캐시에 낙관적으로 추가
+    queryClient.setQueryData(["restaurants"], (old) => [
+      ...old,
+      { ...newRestaurant, id: crypto.randomUUID() },
+    ]);
+    return { previousRestaurants };
+  },
+  onError: (_err, _newRestaurant, context) => {
+    queryClient.setQueryData(["restaurants"], context.previousRestaurants);
+  },
+  onSettled: () => {
+    queryClient.invalidateQueries({ queryKey: ["restaurants"] });
+  },
+});
+```
+
+`onMutate`의 반환값이 `onError`의 `context`로 전달된다. `onMutate`와 `onError`는 서로 다른 함수라 직접 변수를 공유할 수 없기 때문이다.
+
+`onSuccess` 대신 `onSettled`를 쓴 이유는, 실패 후 롤백된 상태에서도 서버 데이터와 동기화가 필요하기 때문이다. `onSuccess`는 성공 시에만 실행되지만 `onSettled`는 성공/실패 상관없이 항상 실행된다.
+
+### useOptimistic (React 19)
+
+React 19에서 정식 출시된 훅으로, `useMutation`의 `onMutate` 없이 낙관적 업데이트를 더 간결하게 구현할 수 있다.
+
+```js
+const [optimisticRestaurants, addOptimistic] = useOptimistic(
+  restaurants,
+  (current, newItem) => [...current, newItem]
+);
+```
+
+TanStack Query의 Optimistic Update와 비교하면:
+
+| | TanStack Query | useOptimistic |
+|---|---|---|
+| 업데이트 대상 | 캐시(`queryClient`) | 로컬 UI 상태 |
+| 롤백 | `onError`에서 직접 처리 | 자동 (액션 완료/실패 시) |
+| 최적 환경 | fetch 기반 REST API | Next.js Server Actions |
+
+`useOptimistic`은 Next.js Server Actions와 함께 쓸 때 빛을 발한다. Server Action이 완료되면 Next.js가 자동으로 페이지를 재검증하고, `useOptimistic`이 자동으로 임시 상태를 해제한다. 롤백 코드를 직접 짤 필요가 없다.
+
+반면 현재 미션처럼 별도 백엔드 API 서버와 fetch로 통신하는 구조에서는 TanStack Query의 Optimistic Update가 더 자연스럽다. 두 도구를 함께 섞으면 서로 다른 상태를 들고 있어서 오히려 복잡해진다.
 
 ---
 
-## 🤔 Zustand를 왜 사용하는가 — Context API와 비교
+## 🤔 TanStack Query를 왜 사용하는가 — Zustand와 비교
 
-### Context API는 전역 상태 관리 도구가 아니다
+### Zustand로 서버 상태를 관리할 때의 한계
 
-Context API는 원래 **prop drilling 해결 도구**다. 상태 관리를 하려면 `useState`/`useReducer`를 별도로 조합해야 하고, 그 결과물을 Provider로 감싸야 한다. 이번 마이그레이션에서 `useRestaurants` 훅 + `RestaurantsContext` + `useRestaurantsContext` 세 파일이 `useRestaurantStore` 하나로 줄어든 게 그 차이다.
+Zustand에서 서버 데이터를 관리하려면 `isLoading`, `error`, `fetchRestaurants`를 직접 구현해야 한다. 또한 중복 요청 방지를 위한 guard 로직도 직접 작성해야 한다. TanStack Query는 이 모든 것을 자동으로 처리한다.
 
 ### 달랐던 점
 
-**Provider가 없다**
+**`useEffect` + `fetchRestaurants`가 사라졌다**
 
-Context는 `<RestaurantsProvider>`로 트리를 감싸야 했지만, Zustand는 Provider 없이 어떤 컴포넌트에서든 스토어에 바로 접근한다.
+Zustand에서는 컴포넌트 마운트 시 `useEffect`로 직접 fetch를 트리거했다. TanStack Query는 `useQuery`만 호출하면 자동으로 데이터를 가져온다.
 
-**리렌더링 최적화**
+**로딩/에러 상태를 직접 관리하지 않아도 된다**
 
-Context는 value 안의 어떤 값이 바뀌어도 해당 Context를 구독하는 모든 컴포넌트가 리렌더링된다. Zustand는 selector로 필요한 상태만 구독하기 때문에, `restaurants`가 바뀌어도 `addRestaurant` 액션만 구독하는 컴포넌트는 리렌더링되지 않는다.
+Zustand에서는 `isLoading`, `error`를 스토어에 직접 정의하고 `set`으로 관리했다. TanStack Query는 `useQuery`가 반환하는 `isLoading`, `error`를 그대로 쓰면 된다.
 
-```js
-// AddRestaurantModal — addRestaurant만 구독하므로
-// restaurants, isLoading, error가 바뀌어도 리렌더링되지 않는다
-const addRestaurant = useRestaurantStore((state) => state.addRestaurant);
-```
+**캐싱이 자동이다**
+
+같은 `queryKey`로 여러 컴포넌트에서 `useQuery`를 호출해도 실제 서버 요청은 한 번만 간다. Zustand는 이런 중복 요청 방지를 직접 구현해야 한다.
 
 ### Trade-off
 
-**Context가 나은 경우**
+**TanStack Query가 불필요한 경우**
 
-- 외부 라이브러리 없이 React만으로 해결 가능
-- 테마, 로케일처럼 변경이 거의 없는 정적 값은 Context가 오히려 적합
-- Provider 범위로 상태의 생명주기가 명확하게 제어되어야 할 때
+- 서버 상태가 없고 클라이언트 상태만 있는 앱
+- 데이터가 자주 바뀌지 않아 캐싱 이점이 없는 경우
 
-**Zustand의 단점**
+**TanStack Query의 단점**
 
-- 스토어가 전역이라 어디서든 접근 가능한 게 장점이지만, 반대로 상태가 어디서 변경되는지 추적하기 어려워질 수 있다
-- Context는 Provider 범위로 상태의 생명주기가 명확한 반면, Zustand 스토어는 앱 전체에서 살아있다
+- 학습 곡선이 있다. `queryKey`, `invalidateQueries`, `onMutate`, `onSettled` 등 새로운 개념을 익혀야 한다.
+- 간단한 fetch에도 `QueryClient` 설정, 커스텀 훅 작성 등 초기 설정이 필요하다.
 
 ---
 
 ## 🤔 고민했던 문제와 해결 과정에서 배운 점
 
-### 무엇을 스토어에 넣을 것인가
+### 무엇을 TanStack Query로, 무엇을 Zustand로 관리할 것인가
 
-스토어에 모든 상태를 넣는 게 아니라, **전역 상태가 필요한 조건**을 기준으로 판단했다.
+| 구분 | 상태 | 도구 | 이유 |
+|---|---|---|---|
+| 서버 상태 | `restaurants` | TanStack Query | 서버가 소유, 캐싱/동기화 필요 |
+| 클라이언트 상태 (persist) | `selectedCategory` | Zustand | UI 상태이지만 새로고침 후 유지 필요 |
+| 로컬 상태 | `clickedRestaurant`, `isAddRestaurantModalOpen` | useState | 해당 컴포넌트에서만 쓰이는 인터랙션 상태 |
 
-| 구분 | 상태 | 이유 |
-|---|---|---|
-| 스토어 (데이터 도메인) | `restaurants`, `addRestaurant`, `isLoading`, `error` | 여러 컴포넌트에서 공유되는 서버 데이터 |
-| 스토어 (persist 목적) | `selectedCategory` | UI 상태이지만 새로고침 후 유지를 위해 스토어로 이동 |
-| 로컬 state (UI 상태) | `clickedRestaurant`, `isAddRestaurantModalOpen` | 해당 컴포넌트에서만 쓰이는 인터랙션 상태 |
+### mutate 콜백 역할 분리
 
-`selectedCategory`는 본래 UI 상태이므로 `useState`가 자연스럽다. 다만 새로고침 후 유지(`persist`)는 Zustand 스토어에만 적용할 수 있기 때문에 기술적인 이유로 스토어로 이동했다. 이 판단은 목적이 명확하므로 정당하지만, persist 요구사항이 없었다면 로컬 state로 유지하는 것이 맞다.
-
-### fetchRestaurants 호출 위치
-
-Zustand 스토어는 React 컴포넌트가 아니라 `useEffect`를 쓸 수 없다. 초기 데이터 fetch는 데이터를 보여주는 컴포넌트(`RestaurantList`)가 마운트될 때 `useEffect`로 호출하는 방식으로 해결했다.
+`useMutation`의 `onSettled`에서 캐시 무효화를 처리하고, `mutate` 호출 시 넘기는 콜백에서 UI 처리(모달 닫기, 에러 알림)를 담당했다.
 
 ```js
-const fetchRestaurants = useRestaurantStore((state) => state.fetchRestaurants);
-
-useEffect(() => {
-  fetchRestaurants();
-}, [fetchRestaurants]);
-```
-
-### 이벤트 핸들러와 스토어 액션의 분리
-
-스토어 액션은 순수한 값만 받도록 하고, 이벤트 객체 처리는 컴포넌트에 남겼다.
-
-```js
-// 스토어 액션 — 값만 받는다
-setSelectedCategory: (category) => set({ selectedCategory: category }),
-
-// 컴포넌트 — 이벤트에서 값을 꺼내는 건 UI 로직
-function handleCategoryChange(e) {
-  setSelectedCategory(e.target.value);
+// useAddRestaurantMutation.js — 서버 상태 동기화
+onSettled: () => {
+  queryClient.invalidateQueries({ queryKey: ["restaurants"] });
 }
+
+// AddRestaurantModal.jsx — UI 처리
+mutation.mutate(data, {
+  onSuccess: () => onClose(),
+  onError: () => alert("음식점 추가에 실패했습니다. 다시 시도해주세요."),
+});
 ```
+
+### Optimistic Update에서 어떤 상황에서 효과적인지
+
+- 네트워크가 느린 환경에서 사용자가 즉각적인 피드백을 기대할 때
+- 서버 요청의 성공 가능성이 높아 롤백이 거의 발생하지 않을 때
+- 좋아요, 체크리스트처럼 사용자가 빠르게 반복 인터랙션하는 UI
+
+### Optimistic Update 주의해야 할 점
+
+- 롤백 처리가 필수다. 실패 시 낙관적으로 반영한 UI를 반드시 이전 상태로 되돌려야 한다.
+- 임시 ID를 사용하므로 `onSettled`에서 `invalidateQueries`로 서버 실제 데이터와 반드시 동기화해야 한다.
+- 실패 후 롤백되는 경험(추가한 항목이 갑자기 사라짐)이 사용자에게 혼란을 줄 수 있으므로, 실패 가능성이 높은 요청에는 적합하지 않다.
