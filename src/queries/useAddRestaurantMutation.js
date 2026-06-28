@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createRestaurant } from "../api";
+import { restaurantKeys } from "./queryKeys";
 
 export function useAddRestaurantMutation() {
   const queryClient = useQueryClient();
@@ -7,11 +8,11 @@ export function useAddRestaurantMutation() {
   return useMutation({
     mutationFn: createRestaurant,
     onMutate: async (newRestaurant) => {
-      await queryClient.cancelQueries({ queryKey: ["restaurants"] });
+      await queryClient.cancelQueries({ queryKey: restaurantKeys.all() });
 
-      const previousRestaurants = queryClient.getQueryData(["restaurants"]);
+      const previousRestaurants = queryClient.getQueryData(restaurantKeys.all());
 
-      queryClient.setQueryData(["restaurants"], (old) => [
+      queryClient.setQueryData(restaurantKeys.all(), (old) => [
         ...old,
         { ...newRestaurant, id: crypto.randomUUID() },
       ]);
@@ -19,10 +20,10 @@ export function useAddRestaurantMutation() {
       return { previousRestaurants };
     },
     onError: (_err, _newRestaurant, context) => {
-      queryClient.setQueryData(["restaurants"], context.previousRestaurants);
+      queryClient.setQueryData(restaurantKeys.all(), context.previousRestaurants);
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["restaurants"] });
+      queryClient.invalidateQueries({ queryKey: restaurantKeys.all() });
     },
   });
 }
